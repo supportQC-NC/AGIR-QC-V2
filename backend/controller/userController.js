@@ -531,7 +531,7 @@ const generateWelcomeEmail = ({ nom, prenom, email, password, role }) => `
       </div>
       <div class="btn-wrap">
         <div class="btn-outer">
-          <a href="http://192.168.0.86:3000" class="btn">Accéder à la plateforme →</a>
+          <a href="https://www.krysto.io" class="btn">Accéder à la plateforme →</a>
         
         </div>
       </div>
