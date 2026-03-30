@@ -42,7 +42,7 @@ const importDBF = async (dbfFileName, entreprises) => {
       const cle = config.getCle(record);
       if (!cle) continue;
 
-      const data = config.transform(record, entreprise._id);
+      const data = await config.transform(record, entreprise._id);
       const filter = { entreprise: entreprise._id, [config.cleUnique]: cle };
 
       const existing = await config.model.findOne(filter);
