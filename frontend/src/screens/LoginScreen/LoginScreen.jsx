@@ -124,8 +124,9 @@ const Login = () => {
     <div className="login-container">
       <div className="login-box">
         <div className="login-header">
-          <h1>QC Tools</h1>
-          <span>Connexion</span>
+          <h1>A.G.I.R</h1>
+
+          <span>Assistant de Gestion Interne et Rapports</span>
         </div>
 
         {error && <div className="login-error">{error}</div>}
