@@ -23,6 +23,7 @@ import NotFound from "./screens/NotFoundScreen/NotFoundScreen";
 
 import UserDashboard from "./screens/user/userDashboardScreen";
 import AdminDashboard from "./screens/admin/AdminDashboardScreen";
+import AdminEntreprises from "./screens/admin/AdminEntreprisesScreen";
 import AdminFournisseursScreen from "./screens/admin/AdminArticlesScreen";
 import AdminFournisseurInfosScreen from "./screens/admin/AdminFournisseurInfosScreen";
 import AdminArticles from "./screens/admin/AdminArticlesScreen";
@@ -61,6 +62,7 @@ const router = createBrowserRouter(
       {/* Routes admin */}
       <Route element={<AdminRoute />}>
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/entreprises" element={<AdminEntreprises />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/fournisseurs" element={<AdminFournisseursScreen />} />
         <Route path="/admin/fournisseurs/:nomDossierDBF" element={<AdminFournisseursScreen />} />
