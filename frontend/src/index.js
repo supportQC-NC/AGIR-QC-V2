@@ -62,7 +62,7 @@ const router = createBrowserRouter(
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/entreprises" element={<AdminEntreprises />} />
         <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/outils" element={<AdminOutilsScreen />} />
+        <Route path="/admin/outils" element={<AdminOutilsScreen />} />
         <Route path="/admin/taches-cron" element={<AdminTachesCronScreen />} />
 
       </Route>

@@ -100,6 +100,11 @@ export const adminMenuStructure = [
         path: "/admin/taches-cron",
         icon: HiTerminal,
       },
+      {
+        label: "Outils",
+        path: "/admin/outils",
+        icon: HiTerminal,
+      },
     ],
   },
 ];
@@ -124,6 +129,7 @@ export const moduleMenuStructure = [
         path: "/reappro",
         icon: HiRefresh,
       },
+
     ],
   },
 
