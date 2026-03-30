@@ -23,6 +23,10 @@ import NotFound from "./screens/NotFoundScreen/NotFoundScreen";
 
 import UserDashboard from "./screens/user/userDashboardScreen";
 import AdminDashboard from "./screens/admin/AdminDashboardScreen";
+import AdminFournisseursScreen from "./screens/Admin/AdminFournisseursScreen";
+import AdminFournisseurInfosScreen from "./screens/Admin/AdminFournisseurInfosScreen";
+import AdminArticles from "./screens/Admin/AdminArticlesScreen";
+import AdminArticleInfosScreen from "./screens/Admin/AdminArticleInfosScreen";
 
 // 🔹 DashboardRedirect - redirige selon rôle
 const DashboardRedirect = () => {
@@ -58,6 +62,11 @@ const router = createBrowserRouter(
       <Route element={<AdminRoute />}>
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/fournisseurs" element={<AdminFournisseursScreen />} />
+        <Route path="/admin/fournisseurs/:nomDossierDBF" element={<AdminFournisseursScreen />} />
+        <Route path="/admin/fournisseurs/:nomDossierDBF/:fournId" element={<AdminFournisseurInfosScreen />} />
+        <Route path="/admin/articles" element={<AdminArticles />} />
+        <Route path="/admin/articles/:nomDossierDBF/:nart" element={<AdminArticleInfosScreen />} />
       </Route>
 
       {/* 404 */}
