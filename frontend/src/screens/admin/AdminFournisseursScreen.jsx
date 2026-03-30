@@ -144,7 +144,7 @@ const AdminFournisseursScreen = () => {
     // Filtre santé (nécessite les stats)
     if (hasStats && healthFilter !== "all") {
       list = list.filter((fourn) => {
-        const fournKey = String(fourn.FOURN).trim();
+        const fournKey = String(fourn.codeFourn).trim();
         const s = allStats[fournKey];
         if (!s) return healthFilter === "hide_stopped"; // pas de stats = pas d'articles = on garde si on masque les arrêtés
 
@@ -166,8 +166,8 @@ const AdminFournisseursScreen = () => {
     // Tri
     if (sortKey && hasStats) {
       list = [...list].sort((a, b) => {
-        const sa = allStats[String(a.FOURN).trim()] || {};
-        const sb = allStats[String(b.FOURN).trim()] || {};
+        const sa = allStats[String(a.codeFourn).trim()] || {};
+        const sb = allStats[String(b.codeFourn).trim()] || {};
         const va = sa[sortKey] || 0;
         const vb = sb[sortKey] || 0;
         return sortDir === "desc" ? vb - va : va - vb;
@@ -345,7 +345,7 @@ const AdminFournisseursScreen = () => {
                   </thead>
                   <tbody>
                     {filteredAndSortedFournisseurs.map((fourn) => {
-                      const fournKey = String(fourn.FOURN).trim();
+                      const fournKey = String(fourn.codeFourn).trim();
                       const stats = allStats[fournKey];
                       const hasStats = !!stats;
                       const total = stats?.total || 0;
@@ -361,25 +361,25 @@ const AdminFournisseursScreen = () => {
                       const rowClass = allStopped ? "row-all-stopped" : arreteRate > 70 ? "row-health-bad" : depRate > 30 ? "row-health-warn" : "";
 
                       return (
-                        <tr key={fourn.FOURN} className={rowClass}>
+                        <tr key={fourn.codeFourn} className={rowClass}>
                           <td className="col-code">
-                            <Link to={`/admin/fournisseurs/${selectedEntreprise}/${fourn.FOURN}`} className="fourn-code-link">
-                              {fourn.FOURN}
+                            <Link to={`/admin/fournisseurs/${selectedEntreprise}/${fourn.codeFourn}`} className="fourn-code-link">
+                              {fourn.codeFourn}
                             </Link>
                           </td>
                           <td className="col-nom">
                             <div className="nom-cell">
-                              <strong>{safeTrim(fourn.NOM)}</strong>
+                              <strong>{safeTrim(fourn.nom)}</strong>
                               {allStopped && <span className="badge-all-stopped" title="Tous les articles sont arrêtés"><HiBan /> 100% arrêté</span>}
                             </div>
                           </td>
                           <td className="col-adresse">
-                            <span className="adr-line">{safeTrim(fourn.AD1)}</span>
-                            <span className="adr-line city">{safeTrim(fourn.AD2)} {safeTrim(fourn.AD3)}</span>
+                            <span className="adr-line">{safeTrim(fourn.adresse1)}</span>
+                            <span className="adr-line city">{safeTrim(fourn.adresse2)} {safeTrim(fourn.adresse3)}</span>
                           </td>
                           <td className="col-tel">
-                            {safeTrim(fourn.TEL) && (
-                              <a href={`tel:${safeTrim(fourn.TEL)}`} className="tel-link"><HiPhone /> {safeTrim(fourn.TEL)}</a>
+                            {safeTrim(fourn.telephone) && (
+                              <a href={`tel:${safeTrim(fourn.telephone)}`} className="tel-link"><HiPhone /> {safeTrim(fourn.telephone)}</a>
                             )}
                           </td>
                           <td className="col-stats">
@@ -402,7 +402,7 @@ const AdminFournisseursScreen = () => {
                           <td className="col-num"><span className={`num-reappro ${reappro > 0 ? "has" : ""}`}>{hasStats ? reappro : "-"}</span></td>
                           <td className="col-num"><span className="num-value">{hasStats && stockValueHT > 0 ? formatPriceShort(stockValueHT) : "-"}</span></td>
                           <td className="col-actions">
-                            <Link to={`/admin/fournisseurs/${selectedEntreprise}/${fourn.FOURN}`} className="btn-view" title="Voir détails"><HiEye /></Link>
+                            <Link to={`/admin/fournisseurs/${selectedEntreprise}/${fourn.codeFourn}`} className="btn-view" title="Voir détails"><HiEye /></Link>
                           </td>
                         </tr>
                       );

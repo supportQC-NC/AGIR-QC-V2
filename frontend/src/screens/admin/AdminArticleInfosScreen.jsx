@@ -324,8 +324,8 @@ const AdminArticleInfosScreen = () => {
 
   const { data: filialeData, isLoading: loadingFiliales, isFetching: fetchingFiliales } =
     useGetArticleFilialeDataQuery(
-      { nomDossierDBF: selectedEntreprise, nart: article?.NART?.trim() || "" },
-      { skip: !selectedEntreprise || !article?.NART },
+      { nomDossierDBF: selectedEntreprise, nart: article?.codeArticle?.trim() || "" },
+      { skip: !selectedEntreprise || !article?.codeArticle },
     );
 
   useEffect(() => {
@@ -349,11 +349,11 @@ const AdminArticleInfosScreen = () => {
   };
 
   const handleNavigatePrevious = () => {
-    if (previousArticle) navigate(`/admin/articles/${selectedEntreprise}/${previousArticle.NART.trim()}`);
+    if (previousArticle) navigate(`/admin/articles/${selectedEntreprise}/${previousArticle.codeArticle.trim()}`);
   };
 
   const handleNavigateNext = () => {
-    if (nextArticle) navigate(`/admin/articles/${selectedEntreprise}/${nextArticle.NART.trim()}`);
+    if (nextArticle) navigate(`/admin/articles/${selectedEntreprise}/${nextArticle.codeArticle.trim()}`);
   };
 
   // Helpers
@@ -374,10 +374,8 @@ const AdminArticleInfosScreen = () => {
 
   const formatDate = (dateValue) => {
     if (!dateValue) return "-";
-    // String ISO de Mongoose : "2024-01-15T00:00:00.000Z"
-    // OU format DBF brut : "20240115"
+    if (dateValue instanceof Date) return isNaN(dateValue.getTime()) ? "-" : dateValue.toLocaleDateString("fr-FR");
     if (typeof dateValue === "string") {
-      // Format DBF brut
       if (dateValue.length === 8 && /^\d{8}$/.test(dateValue)) {
         const y = parseInt(dateValue.substring(0, 4));
         const m = parseInt(dateValue.substring(4, 6));
@@ -386,13 +384,9 @@ const AdminArticleInfosScreen = () => {
           return `${d.toString().padStart(2, "0")}/${m.toString().padStart(2, "0")}/${y}`;
         return "-";
       }
-      // String ISO ou autre format de date
       const parsed = new Date(dateValue);
       return !isNaN(parsed.getTime()) ? parsed.toLocaleDateString("fr-FR") : "-";
     }
-    // Objet Date natif
-    if (dateValue instanceof Date) return isNaN(dateValue.getTime()) ? "-" : dateValue.toLocaleDateString("fr-FR");
-    // Timestamp numérique
     if (typeof dateValue === "number") {
       const parsed = new Date(dateValue);
       return !isNaN(parsed.getTime()) ? parsed.toLocaleDateString("fr-FR") : "-";
@@ -406,7 +400,7 @@ const AdminArticleInfosScreen = () => {
   };
 
   const isPromoActive = (art) => {
-    if (!art?.DPROMOD || !art?.DPROMOF || !art?.PVPROMO) return false;
+    if (!art?.datePromoDebut || !art?.datePromoFin || !art?.prixPromo) return false;
     const parsePromoDate = (v) => {
       if (!v) return null;
       if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
@@ -416,8 +410,8 @@ const AdminArticleInfosScreen = () => {
       const parsed = new Date(v);
       return isNaN(parsed.getTime()) ? null : parsed;
     };
-    const dateDebut = parsePromoDate(art.DPROMOD);
-    const dateFin = parsePromoDate(art.DPROMOF);
+    const dateDebut = parsePromoDate(art.datePromoDebut);
+    const dateFin = parsePromoDate(art.datePromoFin);
     if (!dateDebut || !dateFin) return false;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     dateDebut.setHours(0, 0, 0, 0); dateFin.setHours(23, 59, 59, 999);
@@ -431,10 +425,10 @@ const AdminArticleInfosScreen = () => {
 
   const calculateStockTotal = (art) => {
     if (!art) return 0;
-    return (parseFloat(art.S1) || 0) + (parseFloat(art.S2) || 0) + (parseFloat(art.S3) || 0) + (parseFloat(art.S4) || 0) + (parseFloat(art.S5) || 0);
+    return (parseFloat(art.s1) || 0) + (parseFloat(art.s2) || 0) + (parseFloat(art.s3) || 0) + (parseFloat(art.s4) || 0) + (parseFloat(art.s5) || 0);
   };
 
-  const getEnCommande = (art) => (!art ? 0 : parseFloat(art.ENCDE) || 0);
+  const getEnCommande = (art) => (!art ? 0 : parseFloat(art.enCoursCommande) || 0);
 
   const getMonthsData = useMemo(() => {
     const monthNames = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
@@ -443,18 +437,20 @@ const AdminArticleInfosScreen = () => {
     const lastCompleteMonth = (now.getMonth() - 1 + 12) % 12;
     return Array.from({ length: 12 }, (_, i) => {
       const monthIndex = (lastCompleteMonth - (11 - i) + 12) % 12;
-      return { vKey: `V${i + 1}`, rupKey: `RUP${i + 1}`, name: monthNames[monthIndex], shortName: shortMonthNames[monthIndex], monthIndex };
+      return { vKey: `v${i + 1}`, rupKey: `r${i + 1}`, name: monthNames[monthIndex], shortName: shortMonthNames[monthIndex], monthIndex };
     });
   }, []);
 
   const salesData = useMemo(() => {
     if (!articleData?.article) return [];
-    return getMonthsData.map((m) => ({ name: m.shortName, fullName: m.name, ventes: parseFloat(articleData.article[m.vKey]) || 0 }));
+    const art = articleData.article;
+    return getMonthsData.map((m) => ({ name: m.shortName, fullName: m.name, ventes: parseFloat(art.ventes?.[m.vKey]) || 0 }));
   }, [articleData, getMonthsData]);
 
   const ruptureData = useMemo(() => {
     if (!articleData?.article) return [];
-    return getMonthsData.map((m) => ({ name: m.shortName, fullName: m.name, ruptures: parseFloat(articleData.article[m.rupKey]) || 0 }));
+    const art = articleData.article;
+    return getMonthsData.map((m) => ({ name: m.shortName, fullName: m.name, ruptures: parseFloat(art.ruptures?.[m.rupKey]) || 0 }));
   }, [articleData, getMonthsData]);
 
   const totalSales = useMemo(() => salesData.reduce((s, i) => s + i.ventes, 0), [salesData]);
@@ -482,8 +478,8 @@ const AdminArticleInfosScreen = () => {
 
   const calculateMarge = (art) => {
     if (!art) return null;
-    const pvHT = parseFloat(art.PVTE) || 0;
-    const prixRevient = (parseFloat(art.DERPREV) || 0) > 0 ? parseFloat(art.DERPREV) : parseFloat(art.PREV) || 0;
+    const pvHT = parseFloat(art.prixVenteHT) || 0;
+    const prixRevient = (parseFloat(art.dernierPrixRevient) || 0) > 0 ? parseFloat(art.dernierPrixRevient) : parseFloat(art.prixRevient) || 0;
     if (pvHT <= 0 || prixRevient <= 0) return null;
     return ((pvHT - prixRevient) / pvHT * 100).toFixed(1);
   };
@@ -497,11 +493,11 @@ const AdminArticleInfosScreen = () => {
 
   // ── URLs médias ──────────────────────────────────────────────────────────
   const photoUrl = hasPhotosConfigured && article
-    ? getPhotoUrl(selectedEntrepriseData?.trigramme, article.NART)
+    ? getPhotoUrl(selectedEntrepriseData?.trigramme, article.codeArticle)
     : null;
 
   const pdfUrl = hasPhotosConfigured && article
-    ? getPdfUrl(selectedEntrepriseData?.trigramme, article.NART)
+    ? getPdfUrl(selectedEntrepriseData?.trigramme, article.codeArticle)
     : null;
 
   const mappingEntrepots = selectedEntrepriseData?.mappingEntrepots || { S1: "Magasin", S2: "S2", S3: "S3", S4: "S4", S5: "S5" };
@@ -565,18 +561,18 @@ const AdminArticleInfosScreen = () => {
             <span className="article-nart-badge">{nart}</span>
           </div>
           {hasActivePromo && (
-            <div className="promo-indicator-header"><HiFire /><div className="promo-text"><span className="promo-label">Promo</span><span className="promo-discount">-{calculateDiscount(article.PVTETTC, article.PVPROMO)}%</span></div></div>
+            <div className="promo-indicator-header"><HiFire /><div className="promo-text"><span className="promo-label">Promo</span><span className="promo-discount">-{calculateDiscount(article.prixVenteTTC, article.prixPromo)}%</span></div></div>
           )}
         </div>
 
         <div className="article-navigation">
-          <button className="btn-nav btn-prev" onClick={handleNavigatePrevious} disabled={!previousArticle || loadingAdjacent} title={previousArticle ? `Article précédent: ${previousArticle.NART?.trim()}` : "Aucun article précédent"}>
+          <button className="btn-nav btn-prev" onClick={handleNavigatePrevious} disabled={!previousArticle || loadingAdjacent} title={previousArticle ? `Article précédent: ${previousArticle.codeArticle?.trim()}` : "Aucun article précédent"}>
             <HiChevronLeft /><span className="nav-label"></span>
-            {previousArticle && <span className="nav-nart">{previousArticle.NART?.trim()}</span>}
+            {previousArticle && <span className="nav-nart">{previousArticle.codeArticle?.trim()}</span>}
           </button>
           <div className="nav-divider" />
-          <button className="btn-nav btn-next" onClick={handleNavigateNext} disabled={!nextArticle || loadingAdjacent} title={nextArticle ? `Article suivant: ${nextArticle.NART?.trim()}` : "Aucun article suivant"}>
-            {nextArticle && <span className="nav-nart">{nextArticle.NART?.trim()}</span>}
+          <button className="btn-nav btn-next" onClick={handleNavigateNext} disabled={!nextArticle || loadingAdjacent} title={nextArticle ? `Article suivant: ${nextArticle.codeArticle?.trim()}` : "Aucun article suivant"}>
+            {nextArticle && <span className="nav-nart">{nextArticle.codeArticle?.trim()}</span>}
             <span className="nav-label"></span><HiChevronRight />
           </button>
         </div>
@@ -615,13 +611,13 @@ const AdminArticleInfosScreen = () => {
                 <div className="promo-mega-icon"><HiFire /></div>
                 <div className="promo-mega-info">
                   <span className="promo-mega-title">🔥 PROMOTION EN COURS 🔥</span>
-                  <span className="promo-mega-dates">Du <strong>{formatDate(article.DPROMOD)}</strong> au <strong>{formatDate(article.DPROMOF)}</strong></span>
+                  <span className="promo-mega-dates">Du <strong>{formatDate(article.datePromoDebut)}</strong> au <strong>{formatDate(article.datePromoFin)}</strong></span>
                 </div>
               </div>
               <div className="promo-mega-prices">
-                <span className="promo-old-price">{formatPrice(article.PVTETTC)}</span>
-                <span className="promo-new-price">{formatPrice(article.PVPROMO)}</span>
-                <div className="promo-discount-badge">-{calculateDiscount(article.PVTETTC, article.PVPROMO)}%</div>
+                <span className="promo-old-price">{formatPrice(article.prixVenteTTC)}</span>
+                <span className="promo-new-price">{formatPrice(article.prixPromo)}</span>
+                <div className="promo-discount-badge">-{calculateDiscount(article.prixVenteTTC, article.prixPromo)}%</div>
               </div>
             </div>
           )}
@@ -639,16 +635,16 @@ const AdminArticleInfosScreen = () => {
               <div className="renvoi-details">
                 <div className="renvoi-from">
                   <span className="renvoi-label">Article recherché</span>
-                  <span className="renvoi-nart">{articleOriginal.nart}</span>
+                  <span className="renvoi-nart">{articleOriginal.codeArticle}</span>
                   <span className="renvoi-design">{articleOriginal.designation}</span>
-                  {articleOriginal.gencod && <span className="renvoi-gencod"><HiQrcode /> {articleOriginal.gencod}</span>}
+                  {articleOriginal.gencode && <span className="renvoi-gencod"><HiQrcode /> {articleOriginal.gencode}</span>}
                 </div>
                 <div className="renvoi-arrow"><HiSwitchHorizontal /></div>
-                <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.NART)}`} className="renvoi-to renvoi-to-clickable">
+                <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.codeArticle)}`} className="renvoi-to renvoi-to-clickable">
                   <span className="renvoi-label">Remplacé par <HiExternalLink className="renvoi-link-icon" /></span>
-                  <span className="renvoi-nart">{safeTrim(article.NART)}</span>
-                  <span className="renvoi-design">{safeTrim(article.DESIGN)}</span>
-                  {safeTrim(article.GENCOD) && <span className="renvoi-gencod"><HiQrcode /> {safeTrim(article.GENCOD)}</span>}
+                  <span className="renvoi-nart">{safeTrim(article.codeArticle)}</span>
+                  <span className="renvoi-design">{safeTrim(article.designation)}</span>
+                  {safeTrim(article.gencode) && <span className="renvoi-gencod"><HiQrcode /> {safeTrim(article.gencode)}</span>}
                   <span className="renvoi-click-hint">Cliquer pour voir la fiche →</span>
                 </Link>
               </div>
@@ -656,8 +652,8 @@ const AdminArticleInfosScreen = () => {
             </div>
           )}
 
-          {(parseFloat(article.DEPREC) || 0) > 0 && (
-            <div className="alert-banner deprec"><HiExclamation className="banner-icon" /><div className="banner-content"><strong>ARTICLE DÉPRÉCIÉ</strong><span>Dépréciation de {article.DEPREC}%</span></div></div>
+          {(parseFloat(article.depreciation) || 0) > 0 && (
+            <div className="alert-banner deprec"><HiExclamation className="banner-icon" /><div className="banner-content"><strong>ARTICLE DÉPRÉCIÉ</strong><span>Dépréciation de {article.depreciation}%</span></div></div>
           )}
 
           {/* Main Grid */}
@@ -670,19 +666,19 @@ const AdminArticleInfosScreen = () => {
                 photoUrl={photoUrl}
                 pdfUrl={pdfUrl}
                 hasPhotosConfigured={hasPhotosConfigured}
-                articleDesign={safeTrim(article.DESIGN)}
+                articleDesign={safeTrim(article.designation)}
                 hasActivePromo={hasActivePromo}
-                promoDiscount={calculateDiscount(article.PVTETTC, article.PVPROMO)}
+                promoDiscount={calculateDiscount(article.prixVenteTTC, article.prixPromo)}
               />
 
               {/* Quick Badges */}
               <div className="quick-badges">
-                {hasActivePromo && <div className="quick-badge promo"><HiFire /> PROMO -{calculateDiscount(article.PVTETTC, article.PVPROMO)}%</div>}
-                {safeTrim(article.WEB) === "O" && <div className="quick-badge web"><HiGlobe /> Visible Web</div>}
-                {safeTrim(article.FOTO) === "F" && <div className="quick-badge photo"><HiPhotograph /> Photo dispo</div>}
-                {safeTrim(article.SAV) === "O" && <div className="quick-badge sav"><HiShieldCheck /> SAV</div>}
-                {safeTrim(article.COMPOSE) === "O" && <div className="quick-badge compose"><HiCollection /> Composé</div>}
-                {safeTrim(article.RENV) === "O" && <div className="quick-badge renvoi"><HiSwitchHorizontal /> Renvoi</div>}
+                {hasActivePromo && <div className="quick-badge promo"><HiFire /> PROMO -{calculateDiscount(article.prixVenteTTC, article.prixPromo)}%</div>}
+                {safeTrim(article.web) === "O" && <div className="quick-badge web"><HiGlobe /> Visible Web</div>}
+                {safeTrim(article.photo) === "F" && <div className="quick-badge photo"><HiPhotograph /> Photo dispo</div>}
+                {safeTrim(article.sav) === "O" && <div className="quick-badge sav"><HiShieldCheck /> SAV</div>}
+                {safeTrim(article.compose) === "O" && <div className="quick-badge compose"><HiCollection /> Composé</div>}
+                {safeTrim(article.renvoi) === "O" && <div className="quick-badge renvoi"><HiSwitchHorizontal /> Renvoi</div>}
               </div>
 
               {/* Quick Stats */}
@@ -699,18 +695,18 @@ const AdminArticleInfosScreen = () => {
                 <div className="quick-stat full-width"><span className="stat-label">Marge</span><span className="stat-value">{calculateMarge(article) ? `${calculateMarge(article)}%` : "-"}</span></div>
               </div>
 
-              {safeTrim(article.GENDOUBL) && (
+              {safeTrim(article.gencodeDouble) && (
                 <div className="linked-article-card renvoi-card">
                   <h4><HiSwitchHorizontal /> Article de renvoi vers</h4>
-                  <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.GENDOUBL)}`} className="linked-article-link"><span className="linked-nart">{safeTrim(article.GENDOUBL)}</span><HiExternalLink /></Link>
+                  <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.gencodeDouble)}`} className="linked-article-link"><span className="linked-nart">{safeTrim(article.gencodeDouble)}</span><HiExternalLink /></Link>
                   <p className="linked-article-hint">Cet article renvoie vers un autre article</p>
                 </div>
               )}
 
-              {safeTrim(article.ASSOCIE) && (
+              {safeTrim(article.associe) && (
                 <div className="linked-article-card">
                   <h4><HiCollection /> Article associé</h4>
-                  <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.ASSOCIE)}`} className="linked-article-link"><span className="linked-nart">{safeTrim(article.ASSOCIE)}</span><HiExternalLink /></Link>
+                  <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.associe)}`} className="linked-article-link"><span className="linked-nart">{safeTrim(article.associe)}</span><HiExternalLink /></Link>
                 </div>
               )}
             </div>
@@ -736,43 +732,43 @@ const AdminArticleInfosScreen = () => {
                 {activeTab === "general" && (
                   <div className="tab-panel">
                     <div className="info-section designation-section">
-                      <h2 className="article-design-main">{safeTrim(article.DESIGN)}</h2>
-                      {safeTrim(article.DESIGN2) && <p className="article-design-sub">{safeTrim(article.DESIGN2)}</p>}
-                      {safeTrim(article.DESIFRN) && <p className="article-design-frn"><span>Désignation fournisseur:</span> {safeTrim(article.DESIFRN)}</p>}
+                      <h2 className="article-design-main">{safeTrim(article.designation)}</h2>
+                      {safeTrim(article.designation2) && <p className="article-design-sub">{safeTrim(article.designation2)}</p>}
+                      {safeTrim(article.designationFournisseur) && <p className="article-design-frn"><span>Désignation fournisseur:</span> {safeTrim(article.designationFournisseur)}</p>}
                     </div>
                     <div className="info-section">
                       <h3><HiQrcode /> Identification</h3>
                       <div className="info-grid cols-3">
-                        <div className="info-item"><label>Code NART</label><span className="value highlight mono">{safeTrim(article.NART)}</span></div>
-                        <div className="info-item"><label>Code barre (GENCOD)</label><span className="value mono">{safeTrim(article.GENCOD) || "-"}</span></div>
-                        <div className="info-item"><label>Réf. fournisseur</label><span className="value">{safeTrim(article.REFER) || "-"}</span></div>
-                        <div className="info-item"><label>Fournisseur</label><span className="value">{article.FOURN || "-"}</span></div>
-                        <div className="info-item"><label>Groupe / Famille</label><span className="value tag">{safeTrim(article.GROUPE) || "-"}</span></div>
-                        <div className="info-item"><label>Code tarif</label><span className="value">{safeTrim(article.CODTAR) || "-"}</span></div>
+                        <div className="info-item"><label>Code NART</label><span className="value highlight mono">{safeTrim(article.codeArticle)}</span></div>
+                        <div className="info-item"><label>Code barre (GENCOD)</label><span className="value mono">{safeTrim(article.gencode) || "-"}</span></div>
+                        <div className="info-item"><label>Réf. fournisseur</label><span className="value">{safeTrim(article.reference) || "-"}</span></div>
+                        <div className="info-item"><label>Fournisseur</label><span className="value">{article.codeFourn || "-"}</span></div>
+                        <div className="info-item"><label>Groupe / Famille</label><span className="value tag">{safeTrim(article.groupe) || "-"}</span></div>
+                        <div className="info-item"><label>Code tarif</label><span className="value">{safeTrim(article.codeTarif) || "-"}</span></div>
                       </div>
                     </div>
                     <div className="info-section">
                       <h3><HiArchive /> Conditionnement</h3>
                       <div className="info-grid cols-4">
-                        <div className="info-item"><label>Unité</label><span className="value">{safeTrim(article.UNITE) || "-"}</span></div>
-                        <div className="info-item"><label>Conditionnement</label><span className="value">{article.CONDITNM || "-"}</span></div>
-                        <div className="info-item"><label>Volume</label><span className="value">{article.VOL || "-"}</span></div>
-                        <div className="info-item"><label>Colisage (KL)</label><span className="value">{safeTrim(article.KL) || "-"}</span></div>
+                        <div className="info-item"><label>Unité</label><span className="value">{safeTrim(article.unite) || "-"}</span></div>
+                        <div className="info-item"><label>Conditionnement</label><span className="value">{article.conditionnement || "-"}</span></div>
+                        <div className="info-item"><label>Volume</label><span className="value">{article.volume || "-"}</span></div>
+                        <div className="info-item"><label>Colisage (KL)</label><span className="value">{safeTrim(article.kl) || "-"}</span></div>
                       </div>
                     </div>
                     <div className="info-section">
                       <h3><HiLocationMarker /> Emplacements / Gisements</h3>
                       <div className="info-grid cols-3">
-                        <div className="info-item highlight-box"><label>Place principale</label><span className="value">{safeTrim(article.PLACE) || "-"}</span></div>
-                        {["GISM1","GISM2","GISM3","GISM4","GISM5"].map((g, i) => (
+                        <div className="info-item highlight-box"><label>Place principale</label><span className="value">{safeTrim(article.place) || "-"}</span></div>
+                        {["gism1","gism2","gism3","gism4","gism5"].map((g, i) => (
                           <div key={g} className="info-item"><label>Gisement {i + 1}</label><span className="value">{safeTrim(article[g]) || "-"}</span></div>
                         ))}
                       </div>
                     </div>
-                    {safeTrim(article.OBSERV) && (
+                    {safeTrim(article.observation) && (
                       <div className="info-section observations-section">
                         <h3><HiDocumentText /> Observations</h3>
-                        <p className="observations-text">{safeTrim(article.OBSERV)}</p>
+                        <p className="observations-text">{safeTrim(article.observation)}</p>
                       </div>
                     )}
                   </div>
@@ -787,29 +783,29 @@ const AdminArticleInfosScreen = () => {
                         <div className="stock-card total"><div className="stock-card-header"><span className="stock-label">Stock Total</span><HiArchive className="stock-icon" /></div><span className={`stock-value ${calculateStockTotal(article) > 0 ? "positive" : "zero"}`}>{formatStock(calculateStockTotal(article))}</span></div>
                         <div className="stock-card encde"><div className="stock-card-header"><span className="stock-label">En Commande</span><HiTruck className="stock-icon" /></div><span className={`stock-value ${getEnCommande(article) > 0 ? "encde" : ""}`}>{formatStock(getEnCommande(article))}</span></div>
                         <div className="stock-card stock-days"><div className="stock-card-header"><span className="stock-label">Stock en Jours</span><HiClock className="stock-icon" /></div><span className={`stock-value ${stockEnJours === 0 ? "zero" : stockEnJours === Infinity ? "positive" : stockEnJours < 30 ? "warning" : stockEnJours < 90 ? "" : "positive"}`}>{formatStockEnJours(stockEnJours)}</span><span className="stock-subvalue">({formatStockEnMois(stockEnMois)})</span></div>
-                        {["S1","S2","S3","S4","S5"].map((key) => (
-                          <div key={key} className="stock-card"><div className="stock-card-header"><span className="stock-label">{mappingEntrepots[key]}</span><span className="stock-key">{key}</span></div><span className={`stock-value ${parseFloat(article[key]) > 0 ? "positive" : "zero"}`}>{formatStock(article[key])}</span></div>
+                        {["s1","s2","s3","s4","s5"].map((key) => (
+                          <div key={key} className="stock-card"><div className="stock-card-header"><span className="stock-label">{mappingEntrepots[key.toUpperCase()]}</span><span className="stock-key">{key.toUpperCase()}</span></div><span className={`stock-value ${parseFloat(article[key]) > 0 ? "positive" : "zero"}`}>{formatStock(article[key])}</span></div>
                         ))}
                       </div>
                     </div>
                     <div className="info-section">
                       <h3><HiTrendingDown /> Gestion des stocks</h3>
                       <div className="info-grid cols-4">
-                        <div className="info-item"><label>Stock STOCK (ancien)</label><span className={`value ${parseFloat(article.STOCK) > 0 ? "positive" : "zero"}`}>{formatStock(article.STOCK)}</span></div>
-                        <div className="info-item"><label>Stock local 2 (STLOC2)</label><span className="value">{formatStock(article.STLOC2)}</span></div>
-                        <div className="info-item"><label>Stock mini (SMINI)</label><span className="value warning">{formatStock(article.SMINI)}</span></div>
-                        <div className="info-item"><label>Réservé</label><span className="value reserved">{formatStock(article.RESERV)}</span></div>
-                        <div className="info-item"><label>En commande (ENCDE)</label><span className="value">{formatStock(article.ENCDE)}</span></div>
-                        <div className="info-item"><label>Commande spéciale</label><span className="value">{formatStock(article.CDESPEC)}</span></div>
-                        <div className="info-item"><label>Stock sécurité</label><span className="value">{formatStock(article.STSECUR)}</span></div>
-                        <div className="info-item"><label>Tarif liste (TARIFL)</label><span className="value">{article.TARIFL ? "Oui" : "Non"}</span></div>
+                        <div className="info-item"><label>Stock STOCK (ancien)</label><span className={`value ${parseFloat(article.stock) > 0 ? "positive" : "zero"}`}>{formatStock(article.stock)}</span></div>
+                        <div className="info-item"><label>Stock local 2 (STLOC2)</label><span className="value">{formatStock(article.stockLocal2)}</span></div>
+                        <div className="info-item"><label>Stock mini (SMINI)</label><span className="value warning">{formatStock(article.stockMini)}</span></div>
+                        <div className="info-item"><label>Réservé</label><span className="value reserved">{formatStock(article.reserve)}</span></div>
+                        <div className="info-item"><label>En commande (ENCDE)</label><span className="value">{formatStock(article.enCoursCommande)}</span></div>
+                        <div className="info-item"><label>Commande spéciale</label><span className="value">{formatStock(article.commandeSpeciale)}</span></div>
+                        <div className="info-item"><label>Stock sécurité</label><span className="value">{formatStock(article.stockSecurite)}</span></div>
+                        <div className="info-item"><label>Tarif liste (TARIFL)</label><span className="value">{article.tarifLibre ? "Oui" : "Non"}</span></div>
                       </div>
                     </div>
                     <div className="info-section chart-section">
                       <h3><HiChartBar /> Répartition des stocks</h3>
                       <div className="chart-container">
                         <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={["S1","S2","S3","S4","S5"].map((k) => ({ name: mappingEntrepots[k], value: parseFloat(article[k]) || 0 }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                          <BarChart data={["s1","s2","s3","s4","s5"].map((k) => ({ name: mappingEntrepots[k.toUpperCase()], value: parseFloat(article[k]) || 0 }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3a" /><XAxis dataKey="name" stroke="#a0a0b0" /><YAxis stroke="#a0a0b0" />
                             <Tooltip contentStyle={{ backgroundColor: "#1a1a25", border: "1px solid #2a2a3a", borderRadius: "8px" }} labelStyle={{ color: "#f0f0f5" }} />
                             <Bar dataKey="value" name="Stock" fill="#6366f1" radius={[4, 4, 0, 0]} />
@@ -826,29 +822,29 @@ const AdminArticleInfosScreen = () => {
                     <div className="info-section">
                       <h3><HiCurrencyDollar /> Prix de vente</h3>
                       <div className="price-cards">
-                        <div className={`price-card main ${hasActivePromo ? "has-promo" : ""}`}><span className="price-label">Prix TTC</span><span className={`price-value ${hasActivePromo ? "strikethrough" : ""}`}>{formatPrice(article.PVTETTC)}</span></div>
-                        {hasActivePromo && (<div className="price-card promo"><span className="price-label">Prix PROMO</span><span className="price-value">{formatPrice(article.PVPROMO)}</span><span className="discount-badge">-{calculateDiscount(article.PVTETTC, article.PVPROMO)}%</span></div>)}
-                        <div className="price-card"><span className="price-label">Prix HT</span><span className="price-value">{formatPrice(article.PVTE)}</span></div>
-                        <div className="price-card"><span className="price-label">Prix détail</span><span className="price-value">{formatPrice(article.PDETAIL)}</span></div>
+                        <div className={`price-card main ${hasActivePromo ? "has-promo" : ""}`}><span className="price-label">Prix TTC</span><span className={`price-value ${hasActivePromo ? "strikethrough" : ""}`}>{formatPrice(article.prixVenteTTC)}</span></div>
+                        {hasActivePromo && (<div className="price-card promo"><span className="price-label">Prix PROMO</span><span className="price-value">{formatPrice(article.prixPromo)}</span><span className="discount-badge">-{calculateDiscount(article.prixVenteTTC, article.prixPromo)}%</span></div>)}
+                        <div className="price-card"><span className="price-label">Prix HT</span><span className="price-value">{formatPrice(article.prixVenteHT)}</span></div>
+                        <div className="price-card"><span className="price-label">Prix détail</span><span className="price-value">{formatPrice(article.prixDetail)}</span></div>
                       </div>
                     </div>
                     <div className="info-section">
                       <h3><HiTrendingUp /> Prix d'achat & Marges</h3>
                       <div className="info-grid cols-4">
                         <div className="info-item highlight-box">
-                          <label>Prix d'achat (PACHAT){safeTrim(article.DEVISE) && safeTrim(article.DEVISE) !== "XPF" && <span className="devise-badge"><HiCurrencyEuro /> {safeTrim(article.DEVISE)}</span>}</label>
+                          <label>Prix d'achat (PACHAT){safeTrim(article.devise) && safeTrim(article.devise) !== "XPF" && <span className="devise-badge"><HiCurrencyEuro /> {safeTrim(article.devise)}</span>}</label>
                           <span className="value">
                             {(() => {
-                              const devise = safeTrim(article.DEVISE);
-                              const pachat = parseFloat(article.PACHAT) || 0;
+                              const devise = safeTrim(article.devise);
+                              const pachat = parseFloat(article.prixAchat) || 0;
                               if (!devise || devise === "XPF" || devise === "CFP" || devise === "F") return formatPrice(pachat);
                               return `${pachat.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} ${devise}`;
                             })()}
                           </span>
-                          {safeTrim(article.DEVISE) && !["XPF","CFP","F"].includes(safeTrim(article.DEVISE)) && (
+                          {safeTrim(article.devise) && !["XPF","CFP","F"].includes(safeTrim(article.devise)) && (
                             <div className="conversion-info">
                               {(() => {
-                                const conv = convertToXPF(parseFloat(article.PACHAT) || 0, safeTrim(article.DEVISE));
+                                const conv = convertToXPF(parseFloat(article.prixAchat) || 0, safeTrim(article.devise));
                                 if (conv.error) return <span className="conversion-error">⚠️ {conv.error}</span>;
                                 if (conv.amountXPF !== null) return (<><span className="conversion-result">≈ {formatPrice(conv.amountXPF)}</span><span className="conversion-rate">(1 {conv.fromCurrency} = {conv.rate?.toFixed(2)} XPF)</span>{exchangeRates?.isFallback && <span className="conversion-warning">Taux approximatif</span>}</>);
                                 return null;
@@ -856,11 +852,11 @@ const AdminArticleInfosScreen = () => {
                             </div>
                           )}
                         </div>
-                        <div className="info-item"><label>Prix de revient (PREV)</label><span className="value">{formatPrice(article.PREV)}</span></div>
-                        <div className="info-item"><label>Dernier prix revient</label><span className="value">{formatPrice(article.DERPREV)}</span></div>
+                        <div className="info-item"><label>Prix de revient (PREV)</label><span className="value">{formatPrice(article.prixRevient)}</span></div>
+                        <div className="info-item"><label>Dernier prix revient</label><span className="value">{formatPrice(article.dernierPrixRevient)}</span></div>
                         <div className="info-item highlight-box success"><label>Marge calculée</label><span className="value">{calculateMarge(article) ? `${calculateMarge(article)}%` : "-"}</span>{calculateMarge(article) && <span className="marge-formula">(PVTE - DERPREV) / PVTE</span>}</div>
-                        <div className="info-item"><label>% Marge (POURC)</label><span className="value">{formatPercent(article.POURC)}</span></div>
-                        <div className="info-item"><label>Devise achat</label><span className="value">{safeTrim(article.DEVISE) || "XPF (défaut)"}</span></div>
+                        <div className="info-item"><label>% Marge (POURC)</label><span className="value">{formatPercent(article.pourcentage)}</span></div>
+                        <div className="info-item"><label>Devise achat</label><span className="value">{safeTrim(article.devise) || "XPF (défaut)"}</span></div>
                         {exchangeRates && (<div className="info-item"><label>Taux de change{exchangeRatesLoading && " (chargement...)"}</label><span className="value small">{exchangeRates.isFallback ? <span className="warning">Taux approximatifs</span> : `Mis à jour: ${exchangeRates.date}`}</span></div>)}
                       </div>
                     </div>
@@ -876,19 +872,19 @@ const AdminArticleInfosScreen = () => {
                     <div className="info-section">
                       <h3><HiDocumentText /> Fiscalité</h3>
                       <div className="info-grid cols-4">
-                        <div className="info-item highlight-box"><label>Taux TGC (TAXES)</label><span className="value">{formatPercent(article.TAXES)}</span></div>
-                        <div className="info-item"><label>Autre TVA (ATVA)</label><span className="value">{formatPercent(article.ATVA)}</span></div>
-                        <div className="info-item"><label>Taux à déduire</label><span className="value">{formatPercent(article.TXADEDUIRE)}</span></div>
-                        <div className="info-item"><label>Code TGC</label><span className="value">{safeTrim(article.CODTGC) || "-"}</span></div>
+                        <div className="info-item highlight-box"><label>Taux TGC (TAXES)</label><span className="value">{formatPercent(article.taxes)}</span></div>
+                        <div className="info-item"><label>Autre TVA (ATVA)</label><span className="value">{formatPercent(article.tva)}</span></div>
+                        <div className="info-item"><label>Taux à déduire</label><span className="value">{formatPercent(article.txADeduire)}</span></div>
+                        <div className="info-item"><label>Code TGC</label><span className="value">{safeTrim(article.codeTGC) || "-"}</span></div>
                       </div>
                     </div>
-                    {(article.DPROMOD || article.DPROMOF) && (
+                    {(article.datePromoDebut || article.datePromoFin) && (
                       <div className="info-section promo-section">
                         <h3><HiTag /> Informations promotion</h3>
                         <div className="info-grid cols-3">
-                          <div className="info-item"><label>Date début promo</label><span className="value">{formatDate(article.DPROMOD)}</span></div>
-                          <div className="info-item"><label>Date fin promo</label><span className="value">{formatDate(article.DPROMOF)}</span></div>
-                          <div className="info-item"><label>Prix promo</label><span className="value promo">{formatPrice(article.PVPROMO)}</span></div>
+                          <div className="info-item"><label>Date début promo</label><span className="value">{formatDate(article.datePromoDebut)}</span></div>
+                          <div className="info-item"><label>Date fin promo</label><span className="value">{formatDate(article.datePromoFin)}</span></div>
+                          <div className="info-item"><label>Prix promo</label><span className="value promo">{formatPrice(article.prixPromo)}</span></div>
                         </div>
                       </div>
                     )}
@@ -961,41 +957,41 @@ const AdminArticleInfosScreen = () => {
                     <div className="info-section">
                       <h3><HiCalendar /> Dates importantes</h3>
                       <div className="info-grid cols-3">
-                        <div className="info-item"><label>Date création</label><span className="value">{formatDate(article.CREATION)}</span></div>
-                        <div className="info-item"><label>Date inventaire</label><span className="value">{formatDate(article.DATINV)}</span></div>
-                        <div className="info-item"><label>Date inventaire 2</label><span className="value">{formatDate(article.DATINV2)}</span></div>
+                        <div className="info-item"><label>Date création</label><span className="value">{formatDate(article.dateCreation)}</span></div>
+                        <div className="info-item"><label>Date inventaire</label><span className="value">{formatDate(article.dateInventaire)}</span></div>
+                        <div className="info-item"><label>Date inventaire 2</label><span className="value">{formatDate(article.dateInventaire2)}</span></div>
                       </div>
                     </div>
                     <div className="info-section">
                       <h3><HiDocumentText /> Informations douanières</h3>
                       <div className="info-grid cols-3">
-                        <div className="info-item"><label>Code douane</label><span className="value mono">{safeTrim(article.DOUANE) || "-"}</span></div>
-                        <div className="info-item"><label>Devise</label><span className="value">{safeTrim(article.DEVISE) || "-"}</span></div>
-                        <div className="info-item"><label>Code mise à jour</label><span className="value">{safeTrim(article.CODMAJ) || "-"}</span></div>
+                        <div className="info-item"><label>Code douane</label><span className="value mono">{safeTrim(article.douane) || "-"}</span></div>
+                        <div className="info-item"><label>Devise</label><span className="value">{safeTrim(article.devise) || "-"}</span></div>
+                        <div className="info-item"><label>Code mise à jour</label><span className="value">{safeTrim(article.codeMaj) || "-"}</span></div>
                       </div>
                     </div>
                     <div className="info-section">
                       <h3><HiCog /> Paramètres spéciaux</h3>
                       <div className="info-grid cols-4">
-                        <div className="info-item"><label>SAV</label><span className={`value badge ${safeTrim(article.SAV) === "O" ? "success" : ""}`}>{safeTrim(article.SAV) === "O" ? "Oui" : "Non"}</span></div>
-                        <div className="info-item"><label>Garantie</label><span className="value">{safeTrim(article.GARANTIE) || "-"}</span></div>
-                        <div className="info-item"><label>Article composé</label><span className={`value badge ${safeTrim(article.COMPOSE) === "O" ? "info" : ""}`}>{safeTrim(article.COMPOSE) === "O" ? "Oui" : "Non"}</span></div>
-                        <div className="info-item"><label>Article en renvoi</label><span className={`value badge ${safeTrim(article.RENV) === "O" ? "warning" : ""}`}>{safeTrim(article.RENV) === "O" ? "Oui" : "Non"}</span></div>
-                        <div className="info-item"><label>Visible Web</label><span className={`value badge ${safeTrim(article.WEB) === "O" ? "success" : ""}`}>{safeTrim(article.WEB) === "O" ? "Oui" : "Non"}</span></div>
-                        <div className="info-item"><label>Photo disponible</label><span className={`value badge ${safeTrim(article.FOTO) === "F" ? "success" : ""}`}>{safeTrim(article.FOTO) === "F" ? "Oui" : "Non"}</span></div>
-                        <div className="info-item"><label>Texte</label><span className="value">{safeTrim(article.TEXTE) || "-"}</span></div>
-                        <div className="info-item"><label>Couleur</label><span className="value">{safeTrim(article.COULR) || "-"}</span></div>
+                        <div className="info-item"><label>SAV</label><span className={`value badge ${safeTrim(article.sav) === "O" ? "success" : ""}`}>{safeTrim(article.sav) === "O" ? "Oui" : "Non"}</span></div>
+                        <div className="info-item"><label>Garantie</label><span className="value">{safeTrim(article.garantie) || "-"}</span></div>
+                        <div className="info-item"><label>Article composé</label><span className={`value badge ${safeTrim(article.compose) === "O" ? "info" : ""}`}>{safeTrim(article.compose) === "O" ? "Oui" : "Non"}</span></div>
+                        <div className="info-item"><label>Article en renvoi</label><span className={`value badge ${safeTrim(article.renvoi) === "O" ? "warning" : ""}`}>{safeTrim(article.renvoi) === "O" ? "Oui" : "Non"}</span></div>
+                        <div className="info-item"><label>Visible Web</label><span className={`value badge ${safeTrim(article.web) === "O" ? "success" : ""}`}>{safeTrim(article.web) === "O" ? "Oui" : "Non"}</span></div>
+                        <div className="info-item"><label>Photo disponible</label><span className={`value badge ${safeTrim(article.photo) === "F" ? "success" : ""}`}>{safeTrim(article.photo) === "F" ? "Oui" : "Non"}</span></div>
+                        <div className="info-item"><label>Texte</label><span className="value">{safeTrim(article.texte) || "-"}</span></div>
+                        <div className="info-item"><label>Couleur</label><span className="value">{safeTrim(article.couleur) || "-"}</span></div>
                       </div>
                     </div>
                     <div className="info-section">
                       <h3><HiExclamation /> Dépréciation</h3>
-                      <div className="info-grid cols-2"><div className="info-item highlight-box warning"><label>Taux de dépréciation</label><span className="value">{formatPercent(article.DEPREC)}</span></div></div>
+                      <div className="info-grid cols-2"><div className="info-item highlight-box warning"><label>Taux de dépréciation</label><span className="value">{formatPercent(article.depreciation)}</span></div></div>
                     </div>
                     <div className="info-section">
                       <h3><HiLink /> Articles liés</h3>
                       <div className="info-grid cols-2">
-                        <div className="info-item"><label>Article de renvoi (GENDOUBL)</label>{safeTrim(article.GENDOUBL) ? <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.GENDOUBL)}`} className="value link">{safeTrim(article.GENDOUBL)}<HiExternalLink /></Link> : <span className="value">-</span>}</div>
-                        <div className="info-item"><label>Article associé</label>{safeTrim(article.ASSOCIE) ? <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.ASSOCIE)}`} className="value link">{safeTrim(article.ASSOCIE)}<HiExternalLink /></Link> : <span className="value">-</span>}</div>
+                        <div className="info-item"><label>Article de renvoi (GENDOUBL)</label>{safeTrim(article.gencodeDouble) ? <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.gencodeDouble)}`} className="value link">{safeTrim(article.gencodeDouble)}<HiExternalLink /></Link> : <span className="value">-</span>}</div>
+                        <div className="info-item"><label>Article associé</label>{safeTrim(article.associe) ? <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.associe)}`} className="value link">{safeTrim(article.associe)}<HiExternalLink /></Link> : <span className="value">-</span>}</div>
                       </div>
                     </div>
                   </div>

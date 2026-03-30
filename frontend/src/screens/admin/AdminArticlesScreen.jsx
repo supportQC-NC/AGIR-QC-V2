@@ -156,11 +156,11 @@ const AdminArticlesScreen = () => {
   // Compteur réappro calculé sur la page courante (le serveur ne le fournit pas encore)
   const reapproCount = useMemo(() => {
     return articles.filter((a) => {
-      const s1 = parseFloat(a.S1) || 0;
+      const s1 = parseFloat(a.s1) || 0;
       const stockTotal =
-        (parseFloat(a.S1) || 0) + (parseFloat(a.S2) || 0) +
-        (parseFloat(a.S3) || 0) + (parseFloat(a.S4) || 0) +
-        (parseFloat(a.S5) || 0);
+        (parseFloat(a.s1) || 0) + (parseFloat(a.s2) || 0) +
+        (parseFloat(a.s3) || 0) + (parseFloat(a.s4) || 0) +
+        (parseFloat(a.s5) || 0);
       return stockTotal > 0 && s1 === 0;
     }).length;
   }, [articles]);
@@ -198,7 +198,7 @@ const AdminArticlesScreen = () => {
 
   // ====== HELPERS ======
   const isPromoActive = useCallback((article) => {
-    if (!article?.DPROMOD || !article?.DPROMOF || !article?.PVPROMO) return false;
+    if (!article?.datePromoDebut || !article?.datePromoFin || !article?.prixPromo) return false;
     const parseDate = (dv) => {
       if (!dv) return null;
       if (dv instanceof Date) return dv;
@@ -208,8 +208,8 @@ const AdminArticlesScreen = () => {
       if (typeof dv === "string") { const p = new Date(dv); if (!isNaN(p.getTime())) return p; }
       return null;
     };
-    const dd = parseDate(article.DPROMOD);
-    const df = parseDate(article.DPROMOF);
+    const dd = parseDate(article.datePromoDebut);
+    const df = parseDate(article.datePromoFin);
     if (!dd || !df) return false;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     dd.setHours(0, 0, 0, 0); df.setHours(23, 59, 59, 999);
@@ -217,12 +217,12 @@ const AdminArticlesScreen = () => {
   }, []);
 
   const hasDoubleStars = useCallback((article) => {
-    return (article?.DESIGN || "").trim().includes("**");
+    return (article?.designation || "").trim().includes("**");
   }, []);
 
   const calculateStockTotal = useCallback((article) => {
     if (!article) return 0;
-    return (parseFloat(article.S1) || 0) + (parseFloat(article.S2) || 0) + (parseFloat(article.S3) || 0) + (parseFloat(article.S4) || 0) + (parseFloat(article.S5) || 0);
+    return (parseFloat(article.s1) || 0) + (parseFloat(article.s2) || 0) + (parseFloat(article.s3) || 0) + (parseFloat(article.s4) || 0) + (parseFloat(article.s5) || 0);
   }, []);
 
   const getArticleStatut = useCallback((article) => {
@@ -234,7 +234,7 @@ const AdminArticlesScreen = () => {
   }, [hasDoubleStars, calculateStockTotal]);
 
   const checkIsReappro = useCallback((article) => {
-    const s1 = parseFloat(article.S1) || 0;
+    const s1 = parseFloat(article.s1) || 0;
     const stockTotal = calculateStockTotal(article);
     return stockTotal > 0 && s1 === 0;
   }, [calculateStockTotal]);
@@ -308,29 +308,17 @@ const AdminArticlesScreen = () => {
 
   const formatDate = (dateValue) => {
     if (!dateValue) return "-";
-    // Format DBF brut : "20240115" → "15/01/2024"
-    if (typeof dateValue === "string" && dateValue.length === 8 && /^\d{8}$/.test(dateValue)) {
-      const y = parseInt(dateValue.substring(0, 4));
-      const m = parseInt(dateValue.substring(4, 6));
-      const d = parseInt(dateValue.substring(6, 8));
-      if (y > 0 && m >= 1 && m <= 12 && d >= 1 && d <= 31)
-        return `${d.toString().padStart(2, "0")}/${m.toString().padStart(2, "0")}/${y}`;
-      return "-";
-    }
-    // String ISO de Mongoose : "2024-01-15T00:00:00.000Z"
     if (typeof dateValue === "string") {
+      if (dateValue.length === 8 && /^\d{8}$/.test(dateValue)) {
+        return `${dateValue.substring(6, 8)}/${dateValue.substring(4, 6)}/${dateValue.substring(0, 4)}`;
+      }
       const parsed = new Date(dateValue);
-      if (!isNaN(parsed.getTime())) return parsed.toLocaleDateString("fr-FR");
-      return "-";
+      return !isNaN(parsed.getTime()) ? parsed.toLocaleDateString("fr-FR") : "-";
     }
-    // Objet Date natif
-    if (dateValue instanceof Date) {
-      return isNaN(dateValue.getTime()) ? "-" : dateValue.toLocaleDateString("fr-FR");
-    }
-    // Timestamp numérique
+    if (dateValue instanceof Date) return !isNaN(dateValue.getTime()) ? dateValue.toLocaleDateString("fr-FR") : "-";
     if (typeof dateValue === "number") {
       const parsed = new Date(dateValue);
-      return isNaN(parsed.getTime()) ? "-" : parsed.toLocaleDateString("fr-FR");
+      return !isNaN(parsed.getTime()) ? parsed.toLocaleDateString("fr-FR") : "-";
     }
     return "-";
   };
@@ -704,17 +692,17 @@ const AdminArticlesScreen = () => {
                   <tbody>
                     {articles.map((article, index) => {
                       const hasPromo = isPromoActive(article);
-                      const hasDeprec = (parseFloat(article.DEPREC) || 0) > 0;
-                      const isWeb = article.WEB?.toString().toUpperCase().trim() === "O";
-                      const hasPhoto = article.FOTO?.toString().toUpperCase().trim() === "F";
+                      const hasDeprec = (parseFloat(article.depreciation) || 0) > 0;
+                      const isWeb = article.web?.toString().toUpperCase().trim() === "O";
+                      const hasPhoto = article.photo?.toString().toUpperCase().trim() === "F";
                       const stockTotal = calculateStockTotal(article);
-                      const s1 = parseFloat(article.S1) || 0;
+                      const s1 = parseFloat(article.s1) || 0;
                       const artIsReappro = checkIsReappro(article);
                       const statut = getArticleStatut(article);
 
                       return (
                         <tr
-                          key={`${article.NART}-${index}`}
+                          key={`${article.codeArticle}-${index}`}
                           className={`${hasPromo ? "row-promo" : ""} ${statut === STATUT_DEPRECIE ? "row-deprec-stock" : ""} ${statut === STATUT_ARRETE ? "row-arrete" : ""} ${artIsReappro && statut === STATUT_ACTIF ? "row-reappro" : ""}`}
                         >
                           <td className="col-statut">
@@ -723,20 +711,20 @@ const AdminArticlesScreen = () => {
                             {statut === STATUT_ARRETE && <span className="statut-pill statut-pill-arrete" title="Article arrêté"><HiBan /><span>Arrêté</span></span>}
                           </td>
                           <td className="col-code">
-                            <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.NART)}`} className="article-nart-link">
-                              {safeTrim(article.NART)}<HiExternalLink className="link-icon" />
+                            <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(article.codeArticle)}`} className="article-nart-link">
+                              {safeTrim(article.codeArticle)}<HiExternalLink className="link-icon" />
                             </Link>
                           </td>
                           <td className="col-design">
                             <div className="article-designation">
-                              <span className="design-main">{safeTrim(article.DESIGN)}</span>
-                              {safeTrim(article.DESIGN2) && <span className="design-sub">{safeTrim(article.DESIGN2)}</span>}
+                              <span className="design-main">{safeTrim(article.designation)}</span>
+                              {safeTrim(article.designation2) && <span className="design-sub">{safeTrim(article.designation2)}</span>}
                               {artIsReappro && <span className="design-reappro-tag"><HiTrendingDown /> À réapprovisionner en {mappingEntrepots.S1}</span>}
                             </div>
                           </td>
-                          <td className="col-gencod"><span className="gencod-value">{safeTrim(article.GENCOD) || "-"}</span></td>
-                          <td className="col-groupe">{safeTrim(article.GROUPE) && <span className="groupe-tag">{safeTrim(article.GROUPE)}</span>}</td>
-                          <td className="col-fourn"><span className="fourn-value">{article.FOURN || "-"}</span></td>
+                          <td className="col-gencod"><span className="gencod-value">{safeTrim(article.gencode) || "-"}</span></td>
+                          <td className="col-groupe">{safeTrim(article.groupe) && <span className="groupe-tag">{safeTrim(article.groupe)}</span>}</td>
+                          <td className="col-fourn"><span className="fourn-value">{article.codeFourn || "-"}</span></td>
                           <td className="col-stock text-right">
                             <span className={`stock-value ${stockTotal > 0 ? "positive" : stockTotal < 0 ? "negative" : "zero"}`}>{formatStock(stockTotal)}</span>
                           </td>
@@ -748,8 +736,8 @@ const AdminArticlesScreen = () => {
                           </td>
                           <td className="col-price text-right">
                             <div className="price-cell">
-                              {hasPromo && <span className="price-promo">{formatPrice(article.PVPROMO)}</span>}
-                              <span className={`price-value ${hasPromo ? "strikethrough" : ""}`}>{formatPrice(article.PVTETTC)}</span>
+                              {hasPromo && <span className="price-promo">{formatPrice(article.prixPromo)}</span>}
+                              <span className={`price-value ${hasPromo ? "strikethrough" : ""}`}>{formatPrice(article.prixVenteTTC)}</span>
                             </div>
                           </td>
                           <td className="col-badges">
@@ -781,7 +769,7 @@ const AdminArticlesScreen = () => {
                   {" "}à{" "}
                   <strong>{Math.min(articlesData.pagination.page * limit, articlesData.pagination.totalRecords)}</strong>
                   {" "}sur{" "}
-                  <strong>{articlesData.pagination.totalRecords.toLocaleString()}</strong> articles
+                  <strong>{(articlesData.pagination.totalRecords || 0).toLocaleString()}</strong> articles
                 </div>
                 <div className="pagination-controls">
                   <button className="btn-page" disabled={!articlesData.pagination.hasPrevPage} onClick={() => setPage((p) => p - 1)}>
@@ -811,11 +799,11 @@ const AdminArticlesScreen = () => {
                 <HiCube />
                 <div>
                   <h2>Détails de l'article</h2>
-                  <span className="modal-nart">{safeTrim(selectedArticle.NART)}</span>
+                  <span className="modal-nart">{safeTrim(selectedArticle.codeArticle)}</span>
                 </div>
               </div>
               <div className="modal-header-actions">
-                <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(selectedArticle.NART)}`} className="btn-view-full" title="Voir la fiche complète">
+                <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(selectedArticle.codeArticle)}`} className="btn-view-full" title="Voir la fiche complète">
                   <HiExternalLink /><span>Fiche complète</span>
                 </Link>
                 <button className="btn-close-modal" onClick={() => setSelectedArticle(null)}><HiX /></button>
@@ -827,7 +815,7 @@ const AdminArticlesScreen = () => {
                   <div className="modal-photo-section">
                     {!photoError ? (
                       <div className={`photo-wrapper ${photoLoaded ? "loaded" : ""}`}>
-                        <img src={getPhotoUrl(selectedEntrepriseData?.trigramme, selectedArticle.NART)} alt={safeTrim(selectedArticle.DESIGN)} onError={() => setPhotoError(true)} onLoad={() => setPhotoLoaded(true)} />
+                        <img src={getPhotoUrl(selectedEntrepriseData?.trigramme, selectedArticle.codeArticle)} alt={safeTrim(selectedArticle.designation)} onError={() => setPhotoError(true)} onLoad={() => setPhotoLoaded(true)} />
                         {!photoLoaded && <div className="photo-loading"><div className="loading-spinner small"></div></div>}
                       </div>
                     ) : (
@@ -838,16 +826,16 @@ const AdminArticlesScreen = () => {
                       {getArticleStatut(selectedArticle) === STATUT_DEPRECIE && <span className="modal-badge deprec-stock"><HiExclamation /> DÉPRÉCIÉ</span>}
                       {getArticleStatut(selectedArticle) === STATUT_ARRETE && <span className="modal-badge arrete"><HiBan /> ARRÊTÉ</span>}
                       {isPromoActive(selectedArticle) && <span className="modal-badge promo"><HiTag /> PROMO</span>}
-                      {(parseFloat(selectedArticle.DEPREC) || 0) > 0 && !hasDoubleStars(selectedArticle) && <span className="modal-badge deprec"><HiExclamation /> DÉPRÉCIÉ {selectedArticle.DEPREC}%</span>}
-                      {selectedArticle.WEB?.toString().toUpperCase().trim() === "O" && <span className="modal-badge web"><HiGlobe /> WEB</span>}
+                      {(parseFloat(selectedArticle.depreciation) || 0) > 0 && !hasDoubleStars(selectedArticle) && <span className="modal-badge deprec"><HiExclamation /> DÉPRÉCIÉ {selectedArticle.depreciation}%</span>}
+                      {selectedArticle.web?.toString().toUpperCase().trim() === "O" && <span className="modal-badge web"><HiGlobe /> WEB</span>}
                       {checkIsReappro(selectedArticle) && <span className="modal-badge reappro"><HiTrendingDown /> RÉAPPRO</span>}
                     </div>
                   </div>
                 )}
                 <div className="modal-info-section">
                   <div className="info-block designation-block">
-                    <h3>{safeTrim(selectedArticle.DESIGN)}</h3>
-                    {safeTrim(selectedArticle.DESIGN2) && <p>{safeTrim(selectedArticle.DESIGN2)}</p>}
+                    <h3>{safeTrim(selectedArticle.designation)}</h3>
+                    {safeTrim(selectedArticle.designation2) && <p>{safeTrim(selectedArticle.designation2)}</p>}
                   </div>
                   {getArticleStatut(selectedArticle) === STATUT_ARRETE && (
                     <div className="arrete-banner"><HiBan /><div><strong>Article arrêté</strong><span>Cet article est déprécié et n'a plus de stock</span></div></div>
@@ -865,22 +853,22 @@ const AdminArticlesScreen = () => {
                     </div>
                   )}
                   <div className="info-grid codes-grid">
-                    <div className="info-item"><label>Code NART</label><span className="value highlight">{safeTrim(selectedArticle.NART)}</span></div>
-                    <div className="info-item"><label>Code barre</label><span className="value mono">{safeTrim(selectedArticle.GENCOD) || "-"}</span></div>
-                    <div className="info-item"><label>Réf. fournisseur</label><span className="value">{safeTrim(selectedArticle.REFER) || "-"}</span></div>
-                    <div className="info-item"><label>Fournisseur</label><span className="value">{selectedArticle.FOURN || "-"}</span></div>
-                    <div className="info-item"><label>Groupe</label><span className="value tag">{safeTrim(selectedArticle.GROUPE) || "-"}</span></div>
-                    <div className="info-item"><label>Unité</label><span className="value">{safeTrim(selectedArticle.UNITE) || "-"}</span></div>
+                    <div className="info-item"><label>Code NART</label><span className="value highlight">{safeTrim(selectedArticle.codeArticle)}</span></div>
+                    <div className="info-item"><label>Code barre</label><span className="value mono">{safeTrim(selectedArticle.gencode) || "-"}</span></div>
+                    <div className="info-item"><label>Réf. fournisseur</label><span className="value">{safeTrim(selectedArticle.reference) || "-"}</span></div>
+                    <div className="info-item"><label>Fournisseur</label><span className="value">{selectedArticle.codeFourn || "-"}</span></div>
+                    <div className="info-item"><label>Groupe</label><span className="value tag">{safeTrim(selectedArticle.groupe) || "-"}</span></div>
+                    <div className="info-item"><label>Unité</label><span className="value">{safeTrim(selectedArticle.unite) || "-"}</span></div>
                   </div>
                   <div className="info-block price-block">
                     <h4>💰 Prix</h4>
                     <div className="price-grid">
-                      <div className="price-item main"><label>PV TTC</label><span className={isPromoActive(selectedArticle) ? "strikethrough" : ""}>{formatPrice(selectedArticle.PVTETTC)}</span></div>
-                      {isPromoActive(selectedArticle) && <div className="price-item promo"><label>Prix PROMO</label><span>{formatPrice(selectedArticle.PVPROMO)}</span></div>}
-                      <div className="price-item"><label>PV HT</label><span>{formatPrice(selectedArticle.PVTE)}</span></div>
-                      <div className="price-item"><label>Prix achat</label><span>{formatPrice(selectedArticle.PACHAT)}</span></div>
-                      <div className="price-item"><label>Prix revient</label><span>{formatPrice(selectedArticle.PREV)}</span></div>
-                      <div className="price-item"><label>TGC</label><span>{selectedArticle.TAXES || 0}%</span></div>
+                      <div className="price-item main"><label>PV TTC</label><span className={isPromoActive(selectedArticle) ? "strikethrough" : ""}>{formatPrice(selectedArticle.prixVenteTTC)}</span></div>
+                      {isPromoActive(selectedArticle) && <div className="price-item promo"><label>Prix PROMO</label><span>{formatPrice(selectedArticle.prixPromo)}</span></div>}
+                      <div className="price-item"><label>PV HT</label><span>{formatPrice(selectedArticle.prixVenteHT)}</span></div>
+                      <div className="price-item"><label>Prix achat</label><span>{formatPrice(selectedArticle.prixAchat)}</span></div>
+                      <div className="price-item"><label>Prix revient</label><span>{formatPrice(selectedArticle.prixRevient)}</span></div>
+                      <div className="price-item"><label>TGC</label><span>{selectedArticle.taxes || 0}%</span></div>
                     </div>
                   </div>
                   <div className="info-block stock-block">
@@ -889,47 +877,47 @@ const AdminArticlesScreen = () => {
                       <div className="stock-item total"><label>Stock Total</label><span className={calculateStockTotal(selectedArticle) > 0 ? "positive" : "zero"}>{formatStock(calculateStockTotal(selectedArticle))}</span></div>
                       <div className={`stock-item ${checkIsReappro(selectedArticle) ? "stock-item-alert" : ""}`}>
                         <label>{mappingEntrepots.S1}</label>
-                        <span className={parseFloat(selectedArticle.S1) > 0 ? "positive" : checkIsReappro(selectedArticle) ? "reappro-zero" : "zero"}>
-                          {formatStock(selectedArticle.S1)}
+                        <span className={parseFloat(selectedArticle.s1) > 0 ? "positive" : checkIsReappro(selectedArticle) ? "reappro-zero" : "zero"}>
+                          {formatStock(selectedArticle.s1)}
                           {checkIsReappro(selectedArticle) && <span className="stock-alert-icon">⚠️</span>}
                         </span>
                       </div>
-                      <div className="stock-item"><label>{mappingEntrepots.S2}</label><span>{formatStock(selectedArticle.S2)}</span></div>
-                      <div className="stock-item"><label>{mappingEntrepots.S3}</label><span>{formatStock(selectedArticle.S3)}</span></div>
-                      <div className="stock-item"><label>{mappingEntrepots.S4}</label><span>{formatStock(selectedArticle.S4)}</span></div>
-                      <div className="stock-item"><label>{mappingEntrepots.S5}</label><span>{formatStock(selectedArticle.S5)}</span></div>
-                      <div className="stock-item"><label>Réservé</label><span className="reserved">{formatStock(selectedArticle.RESERV)}</span></div>
-                      <div className="stock-item"><label>Mini</label><span>{formatStock(selectedArticle.SMINI)}</span></div>
+                      <div className="stock-item"><label>{mappingEntrepots.S2}</label><span>{formatStock(selectedArticle.s2)}</span></div>
+                      <div className="stock-item"><label>{mappingEntrepots.S3}</label><span>{formatStock(selectedArticle.s3)}</span></div>
+                      <div className="stock-item"><label>{mappingEntrepots.S4}</label><span>{formatStock(selectedArticle.s4)}</span></div>
+                      <div className="stock-item"><label>{mappingEntrepots.S5}</label><span>{formatStock(selectedArticle.s5)}</span></div>
+                      <div className="stock-item"><label>Réservé</label><span className="reserved">{formatStock(selectedArticle.reserve)}</span></div>
+                      <div className="stock-item"><label>Mini</label><span>{formatStock(selectedArticle.stockMini)}</span></div>
                     </div>
                   </div>
-                  {(selectedArticle.GISM1 || selectedArticle.GISM2 || selectedArticle.GISM3 || selectedArticle.GISM4 || selectedArticle.GISM5 || selectedArticle.PLACE) && (
+                  {(selectedArticle.gism1 || selectedArticle.gism2 || selectedArticle.gism3 || selectedArticle.gism4 || selectedArticle.gism5 || selectedArticle.place) && (
                     <div className="info-block gisement-block">
                       <h4>📍 Emplacements / Gisements</h4>
                       <div className="gisement-grid">
-                        {selectedArticle.PLACE && <div className="gisement-item main"><label>Place</label><span>{safeTrim(selectedArticle.PLACE)}</span></div>}
-                        {selectedArticle.GISM1 && <div className="gisement-item"><label>Gisement 1</label><span>{safeTrim(selectedArticle.GISM1)}</span></div>}
-                        {selectedArticle.GISM2 && <div className="gisement-item"><label>Gisement 2</label><span>{safeTrim(selectedArticle.GISM2)}</span></div>}
-                        {selectedArticle.GISM3 && <div className="gisement-item"><label>Gisement 3</label><span>{safeTrim(selectedArticle.GISM3)}</span></div>}
-                        {selectedArticle.GISM4 && <div className="gisement-item"><label>Gisement 4</label><span>{safeTrim(selectedArticle.GISM4)}</span></div>}
-                        {selectedArticle.GISM5 && <div className="gisement-item"><label>Gisement 5</label><span>{safeTrim(selectedArticle.GISM5)}</span></div>}
+                        {selectedArticle.place && <div className="gisement-item main"><label>Place</label><span>{safeTrim(selectedArticle.place)}</span></div>}
+                        {selectedArticle.gism1 && <div className="gisement-item"><label>Gisement 1</label><span>{safeTrim(selectedArticle.gism1)}</span></div>}
+                        {selectedArticle.gism2 && <div className="gisement-item"><label>Gisement 2</label><span>{safeTrim(selectedArticle.gism2)}</span></div>}
+                        {selectedArticle.gism3 && <div className="gisement-item"><label>Gisement 3</label><span>{safeTrim(selectedArticle.gism3)}</span></div>}
+                        {selectedArticle.gism4 && <div className="gisement-item"><label>Gisement 4</label><span>{safeTrim(selectedArticle.gism4)}</span></div>}
+                        {selectedArticle.gism5 && <div className="gisement-item"><label>Gisement 5</label><span>{safeTrim(selectedArticle.gism5)}</span></div>}
                       </div>
                     </div>
                   )}
                   <div className="info-block dates-block">
                     <h4>📅 Informations complémentaires</h4>
                     <div className="info-grid">
-                      <div className="info-item"><label>Date création</label><span className="value">{formatDate(selectedArticle.CREATION)}</span></div>
-                      <div className="info-item"><label>Date inventaire</label><span className="value">{formatDate(selectedArticle.DATINV)}</span></div>
-                      {selectedArticle.DPROMOD && <div className="info-item"><label>Début promo</label><span className="value">{formatDate(selectedArticle.DPROMOD)}</span></div>}
-                      {selectedArticle.DPROMOF && <div className="info-item"><label>Fin promo</label><span className="value">{formatDate(selectedArticle.DPROMOF)}</span></div>}
-                      <div className="info-item"><label>Code douane</label><span className="value">{safeTrim(selectedArticle.DOUANE) || "-"}</span></div>
-                      <div className="info-item"><label>Volume</label><span className="value">{selectedArticle.VOL || "-"}</span></div>
+                      <div className="info-item"><label>Date création</label><span className="value">{formatDate(selectedArticle.dateCreation)}</span></div>
+                      <div className="info-item"><label>Date inventaire</label><span className="value">{formatDate(selectedArticle.dateInventaire)}</span></div>
+                      {selectedArticle.datePromoDebut && <div className="info-item"><label>Début promo</label><span className="value">{formatDate(selectedArticle.datePromoDebut)}</span></div>}
+                      {selectedArticle.datePromoFin && <div className="info-item"><label>Fin promo</label><span className="value">{formatDate(selectedArticle.datePromoFin)}</span></div>}
+                      <div className="info-item"><label>Code douane</label><span className="value">{safeTrim(selectedArticle.douane) || "-"}</span></div>
+                      <div className="info-item"><label>Volume</label><span className="value">{selectedArticle.volume || "-"}</span></div>
                     </div>
                   </div>
-                  {safeTrim(selectedArticle.OBSERV) && (
+                  {safeTrim(selectedArticle.observation) && (
                     <div className="info-block observations-block">
                       <h4>📝 Observations</h4>
-                      <p className="observations-text">{safeTrim(selectedArticle.OBSERV)}</p>
+                      <p className="observations-text">{safeTrim(selectedArticle.observation)}</p>
                     </div>
                   )}
                 </div>
