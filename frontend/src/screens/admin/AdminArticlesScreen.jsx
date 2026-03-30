@@ -538,7 +538,7 @@ const AdminArticlesScreen = () => {
               <button className={`statut-card statut-card-tous ${statutFilter === STATUT_ALL ? "active" : ""}`} onClick={() => handleStatutFilter(STATUT_ALL)}>
                 <div className="statut-card-icon"><HiCube /></div>
                 <div className="statut-card-info">
-                  <span className="statut-card-count">{counts.total.toLocaleString()}</span>
+                  {/* <span className="statut-card-count">{counts.total.toLocaleString()}</span> */}
                   <span className="statut-card-label">Tous</span>
                 </div>
                 {statutFilter === STATUT_ALL && <div className="statut-card-indicator" />}
@@ -547,7 +547,7 @@ const AdminArticlesScreen = () => {
               <button className={`statut-card statut-card-actif ${statutFilter === STATUT_ACTIF ? "active" : ""}`} onClick={() => handleStatutFilter(STATUT_ACTIF)}>
                 <div className="statut-card-icon"><HiCheckCircle /></div>
                 <div className="statut-card-info">
-                  <span className="statut-card-count">{counts.actif.toLocaleString()}</span>
+                  {/* <span className="statut-card-count">{counts.actif.toLocaleString()}</span> */}
                   <span className="statut-card-label">Actifs</span>
                 </div>
                 {statutFilter === STATUT_ACTIF && <div className="statut-card-indicator" />}
@@ -556,7 +556,7 @@ const AdminArticlesScreen = () => {
               <button className={`statut-card statut-card-deprecie ${statutFilter === STATUT_DEPRECIE ? "active" : ""}`} onClick={() => handleStatutFilter(STATUT_DEPRECIE)}>
                 <div className="statut-card-icon"><HiExclamation /></div>
                 <div className="statut-card-info">
-                  <span className="statut-card-count">{counts.deprecie.toLocaleString()}</span>
+                  {/* <span className="statut-card-count">{counts.deprecie.toLocaleString()}</span> */}
                   <span className="statut-card-label">Dépréciés</span>
                 </div>
                 <span className="statut-card-hint">** + stock &gt; 0</span>
@@ -566,7 +566,7 @@ const AdminArticlesScreen = () => {
               <button className={`statut-card statut-card-arrete ${statutFilter === STATUT_ARRETE ? "active" : ""}`} onClick={() => handleStatutFilter(STATUT_ARRETE)}>
                 <div className="statut-card-icon"><HiBan /></div>
                 <div className="statut-card-info">
-                  <span className="statut-card-count">{counts.arrete.toLocaleString()}</span>
+                  {/* <span className="statut-card-count">{counts.arrete.toLocaleString()}</span> */}
                   <span className="statut-card-label">Arrêtés</span>
                 </div>
                 <span className="statut-card-hint">** + stock = 0</span>
