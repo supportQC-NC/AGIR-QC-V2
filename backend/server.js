@@ -13,8 +13,7 @@ import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import entrepriseRoutes from "./routes/entrepriseRoutes.js";
 import filialeRoutes from "./routes/fillialeRoutes.js";
-import articleRoutes from "./routes/articleRoutes.js";
-import fournisseurRoutes from "./routes/fournisseurRoutes.js";
+
 // =======================================
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
@@ -67,8 +66,7 @@ uploadDirs.forEach((dir) => {
 app.use("/api/users", userRoutes);
 app.use("/api/entreprises", entrepriseRoutes);
 app.use("/api/filiales", filialeRoutes);
-app.use("/api/articles", articleRoutes);
-app.use("/api/fournisseurs", fournisseurRoutes);
+
 
 // ==========================================
 // FRONTEND EN PRODUCTION
