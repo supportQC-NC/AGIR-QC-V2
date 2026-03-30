@@ -9,7 +9,8 @@
     "client": "set PORT=3001 && npm start --prefix frontend",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "data:import": "node backend/seeder.js",
-    "data:destroy": "node backend/seeder.js -d"
+    "data:destroy": "node backend/seeder.js -d",
+    "import:fournisseurs": "node backend/scripts/importFournisseurs.js"
   },
   "author": "",
   "license": "ISC",
