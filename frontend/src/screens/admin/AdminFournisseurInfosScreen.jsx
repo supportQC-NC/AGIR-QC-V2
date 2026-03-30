@@ -26,77 +26,78 @@ const TABS = [
 
 const PAGE_SIZE = 25;
 const DEFAULT_MAPPING = { S1: "Magasin", S2: "S2", S3: "S3", S4: "S4", S5: "S5" };
-const DEPOT_KEYS = ["S1", "S2", "S3", "S4", "S5"];
+const DEPOT_KEYS = ["s1", "s2", "s3", "s4", "s5"];
+const DEPOT_LABELS = ["S1", "S2", "S3", "S4", "S5"];
 
 const EXPORT_FIELDS = {
   "Article - Identification": [
-    { key: "NART", label: "NART", default: true },
-    { key: "DESIGN", label: "DESIGN", default: true },
-    { key: "DESIGN2", label: "DESIGN2" },
-    { key: "GENCOD", label: "GENCOD" },
-    { key: "GROUPE", label: "GROUPE" },
-    { key: "FOURN", label: "FOURN", default: true },
-    { key: "REFER", label: "REFER" },
-    { key: "UNITE", label: "UNITE" },
-    { key: "DOUANE", label: "DOUANE" },
-    { key: "VOL", label: "VOL" },
-    { key: "WEB", label: "WEB" },
-    { key: "FOTO", label: "FOTO" },
+    { key: "codeArticle", label: "NART", default: true },
+    { key: "designation", label: "DESIGN", default: true },
+    { key: "designation2", label: "DESIGN2" },
+    { key: "gencode", label: "GENCOD" },
+    { key: "groupe", label: "GROUPE" },
+    { key: "codeFourn", label: "FOURN", default: true },
+    { key: "reference", label: "REFER" },
+    { key: "unite", label: "UNITE" },
+    { key: "douane", label: "DOUANE" },
+    { key: "volume", label: "VOL" },
+    { key: "web", label: "WEB" },
+    { key: "photo", label: "FOTO" },
     { key: "_STATUS", label: "STATUT (calculé)", default: true },
   ],
   "Article - Prix": [
-    { key: "PVTETTC", label: "PVTETTC" },
-    { key: "PVTE", label: "PVTE", default: true },
-    { key: "PVPROMO", label: "PVPROMO" },
-    { key: "PACHAT", label: "PACHAT" },
-    { key: "PREV", label: "PREV" },
-    { key: "TAXES", label: "TAXES" },
-    { key: "DEPREC", label: "DEPREC" },
+    { key: "prixVenteTTC", label: "PVTETTC" },
+    { key: "prixVenteHT", label: "PVTE", default: true },
+    { key: "prixPromo", label: "PVPROMO" },
+    { key: "prixAchat", label: "PACHAT" },
+    { key: "prixRevient", label: "PREV" },
+    { key: "taxes", label: "TAXES" },
+    { key: "depreciation", label: "DEPREC" },
     { key: "_VALEUR_STOCK_HT", label: "VALEUR_STOCK_HT (calculé)" },
   ],
   "Article - Stocks": [
     { key: "_STOCK_TOTAL", label: "STOCK_TOTAL (calculé)", default: true },
-    { key: "S1", label: "S1", default: true },
-    { key: "S2", label: "S2" },
-    { key: "S3", label: "S3" },
-    { key: "S4", label: "S4" },
-    { key: "S5", label: "S5" },
-    { key: "RESERV", label: "RESERV" },
-    { key: "SMINI", label: "SMINI" },
+    { key: "s1", label: "S1", default: true },
+    { key: "s2", label: "S2" },
+    { key: "s3", label: "S3" },
+    { key: "s4", label: "S4" },
+    { key: "s5", label: "S5" },
+    { key: "reserve", label: "RESERV" },
+    { key: "stockMini", label: "SMINI" },
   ],
   "Article - Emplacements": [
-    { key: "PLACE", label: "PLACE" },
-    { key: "GISM1", label: "GISM1" },
-    { key: "GISM2", label: "GISM2" },
-    { key: "GISM3", label: "GISM3" },
-    { key: "GISM4", label: "GISM4" },
-    { key: "GISM5", label: "GISM5" },
+    { key: "place", label: "PLACE" },
+    { key: "gism1", label: "GISM1" },
+    { key: "gism2", label: "GISM2" },
+    { key: "gism3", label: "GISM3" },
+    { key: "gism4", label: "GISM4" },
+    { key: "gism5", label: "GISM5" },
   ],
   "Article - Dates": [
-    { key: "CREATION", label: "CREATION" },
-    { key: "DATINV", label: "DATINV" },
-    { key: "DPROMOD", label: "DPROMOD" },
-    { key: "DPROMOF", label: "DPROMOF" },
+    { key: "dateCreation", label: "CREATION" },
+    { key: "dateInventaire", label: "DATINV" },
+    { key: "datePromoDebut", label: "DPROMOD" },
+    { key: "datePromoFin", label: "DPROMOF" },
   ],
   "Article - Divers": [
-    { key: "OBSERV", label: "OBSERV" },
+    { key: "observation", label: "OBSERV" },
   ],
   "Fournisseur": [
-    { key: "_F_NOM", label: "F_NOM" },
-    { key: "_F_AD1", label: "F_AD1" },
-    { key: "_F_AD2", label: "F_AD2" },
-    { key: "_F_AD3", label: "F_AD3" },
-    { key: "_F_AD4", label: "F_AD4" },
-    { key: "_F_AD5", label: "F_AD5" },
-    { key: "_F_LOCAL", label: "F_LOCAL" },
-    { key: "_F_TEL", label: "F_TEL" },
-    { key: "_F_FAX", label: "F_FAX" },
-    { key: "_F_TLX", label: "F_TLX" },
-    { key: "_F_DELAPRO", label: "F_DELAPRO" },
-    { key: "_F_COEFSMINI", label: "F_COEFSMINI" },
-    { key: "_F_FRANCO", label: "F_FRANCO" },
-    { key: "_F_TEXTE", label: "F_TEXTE" },
-    { key: "_F_OBSERV", label: "F_OBSERV" },
+    { key: "_F_nom", label: "F_NOM" },
+    { key: "_F_adresse1", label: "F_AD1" },
+    { key: "_F_adresse2", label: "F_AD2" },
+    { key: "_F_adresse3", label: "F_AD3" },
+    { key: "_F_adresse4", label: "F_AD4" },
+    { key: "_F_adresse5", label: "F_AD5" },
+    { key: "_F_local", label: "F_LOCAL" },
+    { key: "_F_telephone", label: "F_TEL" },
+    { key: "_F_fax", label: "F_FAX" },
+    { key: "_F_email", label: "F_TLX" },
+    { key: "_F_delaiAppro", label: "F_DELAPRO" },
+    { key: "_F_coefMini", label: "F_COEFSMINI" },
+    { key: "_F_franco", label: "F_FRANCO" },
+    { key: "_F_texte", label: "F_TEXTE" },
+    { key: "_F_observation", label: "F_OBSERV" },
   ],
 };
 
@@ -168,8 +169,6 @@ const AdminFournisseurInfosScreen = () => {
   const formatDate = (dateValue) => {
     if (!dateValue) return "-";
     if (dateValue instanceof Date) return dateValue.toLocaleDateString("fr-FR");
-    if (typeof dateValue === "string" && dateValue.length === 8)
-      return `${dateValue.substring(6, 8)}/${dateValue.substring(4, 6)}/${dateValue.substring(0, 4)}`;
     if (typeof dateValue === "string") {
       const d = new Date(dateValue);
       return isNaN(d.getTime()) ? "-" : d.toLocaleDateString("fr-FR");
@@ -185,22 +184,20 @@ const AdminFournisseurInfosScreen = () => {
   const getStockDepots = useCallback((art) => DEPOT_KEYS.map((k) => parseFloat(art?.[k]) || 0), []);
 
   const calculateStockValueHT = useCallback((art) => {
-    return calculateStockTotal(art) * (parseFloat(art?.PVTE) || 0);
+    return calculateStockTotal(art) * (parseFloat(art?.prixVenteHT) || 0);
   }, [calculateStockTotal]);
 
   const classifyArticle = useCallback((art) => {
-    const design = safeTrim(art.DESIGN);
-    const stock = calculateStockTotal(art);
-    const has = design.includes("**");
-    if (has && stock > 0) return "deprecie";
-    if (has && stock === 0) return "arrete";
+    const dep = art.depreciation || 0;
+    if (dep >= 99) return "arrete";
+    if (dep > 0) return "deprecie";
     return "actif";
-  }, [calculateStockTotal]);
+  }, []);
 
   const needsReappro = useCallback((art) => {
     const status = classifyArticle(art);
     if (status === "arrete") return false;
-    const s1 = parseFloat(art.S1) || 0;
+    const s1 = parseFloat(art.s1) || 0;
     const total = calculateStockTotal(art);
     return total > 0 && s1 === 0;
   }, [classifyArticle, calculateStockTotal]);
@@ -208,15 +205,10 @@ const AdminFournisseurInfosScreen = () => {
   const statusLabels = { actif: "Actif", deprecie: "Déprécié", arrete: "Arrêté" };
 
   const isPromoActive = useCallback((article) => {
-    if (!article?.DPROMOD || !article?.DPROMOF || !article?.PVPROMO) return false;
-    const p = (d) => {
-      if (!d) return null;
-      if (typeof d === "string" && d.length === 8) return new Date(+d.substring(0, 4), +d.substring(4, 6) - 1, +d.substring(6, 8));
-      if (typeof d === "string") { const x = new Date(d); return isNaN(x.getTime()) ? null : x; }
-      return d instanceof Date ? d : null;
-    };
-    const debut = p(article.DPROMOD), fin = p(article.DPROMOF);
-    if (!debut || !fin) return false;
+    if (!article?.datePromoDebut || !article?.datePromoFin || !article?.prixPromo) return false;
+    const debut = new Date(article.datePromoDebut);
+    const fin = new Date(article.datePromoFin);
+    if (isNaN(debut.getTime()) || isNaN(fin.getTime())) return false;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     debut.setHours(0, 0, 0, 0); fin.setHours(23, 59, 59, 999);
     return today >= debut && today <= fin;
@@ -261,13 +253,15 @@ const AdminFournisseurInfosScreen = () => {
     const arts = articlesByCategory[activeTab] || [];
     if (!searchQuery.trim()) return arts;
     const q = searchQuery.trim().toLowerCase();
-    return arts.filter((a) => safeTrim(a.NART).toLowerCase().includes(q) || safeTrim(a.DESIGN).toLowerCase().includes(q));
+    return arts.filter((a) =>
+      (a.codeArticle || "").toLowerCase().includes(q) ||
+      (a.designation || "").toLowerCase().includes(q)
+    );
   }, [articlesByCategory, activeTab, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(currentTabArticles.length / PAGE_SIZE));
   const paginatedArticles = currentTabArticles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  // Export
   const resolveFieldValue = useCallback((art, fieldKey) => {
     if (fieldKey === "_STATUS") return statusLabels[classifyArticle(art)] || "";
     if (fieldKey === "_STOCK_TOTAL") return calculateStockTotal(art);
@@ -275,7 +269,8 @@ const AdminFournisseurInfosScreen = () => {
     if (fieldKey.startsWith("_F_") && fournisseur) {
       return safeTrim(fournisseur[fieldKey.replace("_F_", "")]);
     }
-    return safeTrim(art[fieldKey]);
+    const val = art[fieldKey];
+    return val !== null && val !== undefined ? String(val).trim() : "";
   }, [fournisseur, classifyArticle, calculateStockTotal, calculateStockValueHT]);
 
   const resolveFieldLabel = useCallback((fieldKey) => {
@@ -286,21 +281,18 @@ const AdminFournisseurInfosScreen = () => {
 
   const openExportModal = (scope) => { setExportScope(scope); setShowExportModal(true); };
   const toggleExportField = (key) => setExportFields((prev) => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
-
   const toggleGroupFields = (groupName, allSelected) => {
     const groupKeys = EXPORT_FIELDS[groupName].map(f => f.key);
     setExportFields((prev) => allSelected ? prev.filter(k => !groupKeys.includes(k)) : [...new Set([...prev, ...groupKeys])]);
   };
-
   const selectAllFields = () => setExportFields(Object.values(EXPORT_FIELDS).flat().map(f => f.key));
   const selectNoneFields = () => setExportFields([]);
 
   const doExport = useCallback(() => {
     const articles = exportScope === "all" ? allArticles : (articlesByCategory[exportScope] || []);
     const scopeLabel = { actif: "actifs", deprecie: "deprecies", arrete: "arretes", reappro: "reappro", all: "tous" };
-    const filename = `articles_${safeTrim(fournisseur?.FOURN)}_${scopeLabel[exportScope] || "export"}.csv`;
+    const filename = `articles_${fournisseur?.codeFourn || ""}_${scopeLabel[exportScope] || "export"}.csv`;
     if (articles.length === 0 || exportFields.length === 0) return;
-
     const headers = exportFields.map(k => resolveFieldLabel(k));
     const rows = articles.map((art) =>
       exportFields.map((k) => {
@@ -310,7 +302,6 @@ const AdminFournisseurInfosScreen = () => {
         return val;
       }).join(";")
     );
-
     const csv = "\uFEFF" + headers.join(";") + "\n" + rows.join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -340,7 +331,7 @@ const AdminFournisseurInfosScreen = () => {
             <div className="stock-tooltip-title">Stock par entrepôt</div>
             {DEPOT_KEYS.map((key, i) => (
               <div key={key} className={`stock-tooltip-row ${depots[i] > 0 ? "has-stock" : ""}`}>
-                <span>{mappingEntrepots[key] || key}</span>
+                <span>{mappingEntrepots[DEPOT_LABELS[i]] || DEPOT_LABELS[i]}</span>
                 <span className="stock-tooltip-qty">{depots[i]}</span>
               </div>
             ))}
@@ -362,8 +353,8 @@ const AdminFournisseurInfosScreen = () => {
           <div className="header-title">
             <div className="header-icon small"><HiOfficeBuilding /></div>
             <div>
-              <h1>{safeTrim(fournisseur.NOM)}</h1>
-              <span className="header-subtitle">Code Fournisseur : {fournisseur.FOURN}</span>
+              <h1>{fournisseur.nom}</h1>
+              <span className="header-subtitle">Code Fournisseur : {fournisseur.codeFourn}</span>
             </div>
           </div>
         </div>
@@ -377,7 +368,6 @@ const AdminFournisseurInfosScreen = () => {
 
           {/* Colonne Gauche */}
           <div className="fourn-left-col">
-
             {globalStats && (
               <div className="fourn-card stats-overview-card">
                 <h3><HiCube /> Répartition des Articles</h3>
@@ -425,41 +415,39 @@ const AdminFournisseurInfosScreen = () => {
             <div className="fourn-card">
               <h3><HiLocationMarker /> Coordonnées</h3>
               <div className="info-grid-2cols">
-                <InfoItem label="Adresse 1" value={safeTrim(fournisseur.AD1)} />
-                <InfoItem label="Adresse 2" value={safeTrim(fournisseur.AD2)} />
-                <InfoItem label="Adresse 3" value={safeTrim(fournisseur.AD3)} />
-                <InfoItem label="Adresse 4" value={safeTrim(fournisseur.AD4)} />
-                <InfoItem label="Adresse 5" value={safeTrim(fournisseur.AD5)} />
-                <InfoItem label="Localisation" value={safeTrim(fournisseur.LOCAL)} icon={<HiLocationMarker />} />
+                <InfoItem label="Adresse 1" value={fournisseur.adresse1} />
+                <InfoItem label="Adresse 2" value={fournisseur.adresse2} />
+                <InfoItem label="Adresse 3" value={fournisseur.adresse3} />
+                <InfoItem label="Adresse 4" value={fournisseur.adresse4} />
+                <InfoItem label="Adresse 5" value={fournisseur.adresse5} />
+                <InfoItem label="Localisation" value={fournisseur.local} icon={<HiLocationMarker />} />
               </div>
               <div className="info-grid-2cols mt-1">
-                <InfoItem label="Téléphone" value={safeTrim(fournisseur.TEL)} icon={<HiPhone />} />
-                <InfoItem label="Fax" value={safeTrim(fournisseur.FAX)} icon={<HiDocumentText />} />
-                <InfoItem label="Télex / Email" value={safeTrim(fournisseur.TLX)} icon={<HiMail />} />
+                <InfoItem label="Téléphone" value={fournisseur.telephone} icon={<HiPhone />} />
+                <InfoItem label="Fax" value={fournisseur.fax} icon={<HiDocumentText />} />
+                <InfoItem label="Email" value={fournisseur.email} icon={<HiMail />} />
               </div>
             </div>
 
             <div className="fourn-card">
               <h3><HiCalculator /> Informations Commerciales</h3>
               <div className="info-grid-2cols">
-                <InfoItem label="Délai Appro (Jours)" value={safeTrim(fournisseur.DELAPRO)} icon={<HiCalendar />} />
-                <InfoItem label="Coef Stock Mini" value={safeTrim(fournisseur.COEFSMINI)} />
-                <InfoItem label="Franco" value={safeTrim(fournisseur.FRANCO)} />
-                <InfoItem label="Code Texte" value={safeTrim(fournisseur.TEXTE)} />
+                <InfoItem label="Délai Appro (Jours)" value={fournisseur.delaiAppro} icon={<HiCalendar />} />
+                <InfoItem label="Coef Stock Mini" value={fournisseur.coefMini} />
+                <InfoItem label="Franco" value={fournisseur.franco} />
+                <InfoItem label="Code Texte" value={fournisseur.texte} />
               </div>
             </div>
 
-            {safeTrim(fournisseur.OBSERV) && (
-              <div className="fourn-card observations"><h3><HiAnnotation /> Observations</h3><p>{safeTrim(fournisseur.OBSERV)}</p></div>
+            {fournisseur.observation && (
+              <div className="fourn-card observations"><h3><HiAnnotation /> Observations</h3><p>{fournisseur.observation}</p></div>
             )}
 
-            {Array.from({ length: 10 }, (_, i) => safeTrim(fournisseur[`NOT${i + 1}`])).some((v) => v) && (
+            {fournisseur.notes && fournisseur.notes.length > 0 && (
               <div className="fourn-card notes-section">
                 <h3><HiDocumentText /> Notes &amp; Textes</h3>
                 <div className="notes-grid">
-                  {Array.from({ length: 10 }, (_, i) => safeTrim(fournisseur[`NOT${i + 1}`])).map(
-                    (note, idx) => note && <div key={idx} className="note-item">{note}</div>
-                  )}
+                  {fournisseur.notes.map((note, idx) => note && <div key={idx} className="note-item">{note}</div>)}
                 </div>
               </div>
             )}
@@ -521,8 +509,8 @@ const AdminFournisseurInfosScreen = () => {
                         <th>DESIGN</th>
                         <th className="text-right">Stock</th>
                         <th className="text-right">{mappingEntrepots.S1}</th>
-                        {activeTab === "reappro" && DEPOT_KEYS.slice(1).map(k => (
-                          <th key={k} className="text-right">{mappingEntrepots[k] || k}</th>
+                        {activeTab === "reappro" && DEPOT_KEYS.slice(1).map((k, i) => (
+                          <th key={k} className="text-right">{mappingEntrepots[DEPOT_LABELS[i + 1]] || DEPOT_LABELS[i + 1]}</th>
                         ))}
                         <th className="text-right">PVTE</th>
                         <th className="text-right">Val. HT</th>
@@ -533,19 +521,19 @@ const AdminFournisseurInfosScreen = () => {
                     <tbody>
                       {paginatedArticles.map((art) => {
                         const status = classifyArticle(art);
-                        const s1 = parseFloat(art.S1) || 0;
+                        const s1 = parseFloat(art.s1) || 0;
                         const hasPromo = isPromoActive(art);
                         const valHT = calculateStockValueHT(art);
                         return (
-                          <tr key={art.NART} className={`row-${status} ${needsReappro(art) && activeTab !== "reappro" ? "row-needs-reappro" : ""}`}>
+                          <tr key={art._id} className={`row-${status} ${needsReappro(art) && activeTab !== "reappro" ? "row-needs-reappro" : ""}`}>
                             <td>
-                              <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(art.NART)}`} className="link-nart">
-                                {safeTrim(art.NART)} <HiExternalLink />
+                              <Link to={`/admin/articles/${selectedEntreprise}/${art.codeArticle}`} className="link-nart">
+                                {art.codeArticle} <HiExternalLink />
                               </Link>
                             </td>
                             <td>
                               <div className="cell-design">
-                                <span>{safeTrim(art.DESIGN)}</span>
+                                <span>{art.designation}</span>
                                 {hasPromo && <span className="mini-badge promo"><HiTag /></span>}
                                 {needsReappro(art) && activeTab !== "reappro" && <span className="mini-badge reappro" title="Réappro magasin"><HiSwitchHorizontal /></span>}
                               </div>
@@ -558,7 +546,7 @@ const AdminFournisseurInfosScreen = () => {
                               const v = parseFloat(art[k]) || 0;
                               return <td key={k} className="text-right"><span className={`stock-s1 ${v > 0 ? "positive" : "zero"}`}>{formatStock(v)}</span></td>;
                             })}
-                            <td className="text-right">{formatPrice(art.PVTE)}</td>
+                            <td className="text-right">{formatPrice(art.prixVenteHT)}</td>
                             <td className="text-right">
                               <span className={`val-stock ${valHT > 0 ? "" : "zero"}`}>{valHT > 0 ? formatPrice(valHT) : "-"}</span>
                             </td>
@@ -593,7 +581,6 @@ const AdminFournisseurInfosScreen = () => {
               )}
             </div>
           </div>
-
         </div>
       </div>
 
@@ -671,10 +658,10 @@ const AdminFournisseurInfosScreen = () => {
             <div className="modal-header">
               <div className="modal-title">
                 <HiCube />
-                <div><h2>Détails de l'article</h2><span className="modal-nart">{safeTrim(selectedArticle.NART)}</span></div>
+                <div><h2>Détails de l'article</h2><span className="modal-nart">{selectedArticle.codeArticle}</span></div>
               </div>
               <div className="modal-header-actions">
-                <Link to={`/admin/articles/${selectedEntreprise}/${safeTrim(selectedArticle.NART)}`} className="btn-view-full"><HiExternalLink /> <span>Fiche complète</span></Link>
+                <Link to={`/admin/articles/${selectedEntreprise}/${selectedArticle.codeArticle}`} className="btn-view-full"><HiExternalLink /> <span>Fiche complète</span></Link>
                 <button className="btn-close-modal" onClick={() => setSelectedArticle(null)}><HiX /></button>
               </div>
             </div>
@@ -684,7 +671,7 @@ const AdminFournisseurInfosScreen = () => {
                   <div className="modal-photo-section">
                     {!photoError ? (
                       <div className={`photo-wrapper ${photoLoaded ? "loaded" : ""}`}>
-                        <img src={getPhotoUrl(trigramme, selectedArticle.NART)} alt={safeTrim(selectedArticle.DESIGN)} onError={() => setPhotoError(true)} onLoad={() => setPhotoLoaded(true)} />
+                        <img src={getPhotoUrl(trigramme, selectedArticle.codeArticle)} alt={selectedArticle.designation} onError={() => setPhotoError(true)} onLoad={() => setPhotoLoaded(true)} />
                         {!photoLoaded && <div className="photo-loading"><div className="loading-spinner small"></div></div>}
                       </div>
                     ) : (
@@ -695,14 +682,14 @@ const AdminFournisseurInfosScreen = () => {
                       {classifyArticle(selectedArticle) === "deprecie" && <span className="modal-badge deprec-stock"><HiExclamation /> DÉPRÉCIÉ</span>}
                       {classifyArticle(selectedArticle) === "arrete" && <span className="modal-badge arrete"><HiBan /> ARRÊTÉ</span>}
                       {needsReappro(selectedArticle) && <span className="modal-badge reappro-badge"><HiSwitchHorizontal /> RÉAPPRO</span>}
-                      {selectedArticle.WEB?.toString().toUpperCase().trim() === "O" && <span className="modal-badge web"><HiGlobe /> WEB</span>}
+                      {selectedArticle.web === "O" && <span className="modal-badge web"><HiGlobe /> WEB</span>}
                     </div>
                   </div>
                 )}
                 <div className="modal-info-section">
                   <div className="info-block designation-block">
-                    <h3>{safeTrim(selectedArticle.DESIGN)}</h3>
-                    {safeTrim(selectedArticle.DESIGN2) && <p>{safeTrim(selectedArticle.DESIGN2)}</p>}
+                    <h3>{selectedArticle.designation}</h3>
+                    {selectedArticle.designation2 && <p>{selectedArticle.designation2}</p>}
                   </div>
 
                   {classifyArticle(selectedArticle) === "arrete" && (
@@ -713,23 +700,23 @@ const AdminFournisseurInfosScreen = () => {
                   )}
 
                   <div className="info-grid codes-grid">
-                    <div className="info-item"><label>NART</label><span className="value highlight">{safeTrim(selectedArticle.NART)}</span></div>
-                    <div className="info-item"><label>GENCOD</label><span className="value mono">{safeTrim(selectedArticle.GENCOD) || "-"}</span></div>
-                    <div className="info-item"><label>REFER</label><span className="value">{safeTrim(selectedArticle.REFER) || "-"}</span></div>
-                    <div className="info-item"><label>FOURN</label><span className="value">{selectedArticle.FOURN || "-"}</span></div>
-                    <div className="info-item"><label>GROUPE</label><span className="value tag">{safeTrim(selectedArticle.GROUPE) || "-"}</span></div>
-                    <div className="info-item"><label>UNITE</label><span className="value">{safeTrim(selectedArticle.UNITE) || "-"}</span></div>
+                    <div className="info-item"><label>NART</label><span className="value highlight">{selectedArticle.codeArticle}</span></div>
+                    <div className="info-item"><label>GENCOD</label><span className="value mono">{selectedArticle.gencode || "-"}</span></div>
+                    <div className="info-item"><label>REFER</label><span className="value">{selectedArticle.reference || "-"}</span></div>
+                    <div className="info-item"><label>FOURN</label><span className="value">{selectedArticle.codeFourn || "-"}</span></div>
+                    <div className="info-item"><label>GROUPE</label><span className="value tag">{selectedArticle.groupe || "-"}</span></div>
+                    <div className="info-item"><label>UNITE</label><span className="value">{selectedArticle.unite || "-"}</span></div>
                   </div>
 
                   <div className="info-block price-block">
                     <h4><HiCurrencyDollar /> Prix</h4>
                     <div className="price-grid">
-                      <div className="price-item main"><label>PVTE (HT)</label><span>{formatPrice(selectedArticle.PVTE)}</span></div>
-                      <div className="price-item"><label>PVTETTC</label><span className={isPromoActive(selectedArticle) ? "strikethrough" : ""}>{formatPrice(selectedArticle.PVTETTC)}</span></div>
-                      {isPromoActive(selectedArticle) && <div className="price-item promo-price"><label>PVPROMO</label><span>{formatPrice(selectedArticle.PVPROMO)}</span></div>}
-                      <div className="price-item"><label>PACHAT</label><span>{formatPrice(selectedArticle.PACHAT)}</span></div>
-                      <div className="price-item"><label>PREV</label><span>{formatPrice(selectedArticle.PREV)}</span></div>
-                      <div className="price-item"><label>TAXES</label><span>{selectedArticle.TAXES || 0}%</span></div>
+                      <div className="price-item main"><label>PVTE (HT)</label><span>{formatPrice(selectedArticle.prixVenteHT)}</span></div>
+                      <div className="price-item"><label>PVTETTC</label><span className={isPromoActive(selectedArticle) ? "strikethrough" : ""}>{formatPrice(selectedArticle.prixVenteTTC)}</span></div>
+                      {isPromoActive(selectedArticle) && <div className="price-item promo-price"><label>PVPROMO</label><span>{formatPrice(selectedArticle.prixPromo)}</span></div>}
+                      <div className="price-item"><label>PACHAT</label><span>{formatPrice(selectedArticle.prixAchat)}</span></div>
+                      <div className="price-item"><label>PREV</label><span>{formatPrice(selectedArticle.prixRevient)}</span></div>
+                      <div className="price-item"><label>TAXES</label><span>{selectedArticle.taxes || 0}%</span></div>
                     </div>
                   </div>
 
@@ -737,26 +724,26 @@ const AdminFournisseurInfosScreen = () => {
                     <h4><HiArchive /> Stocks par entrepôt</h4>
                     <div className="stock-grid">
                       <div className="stock-item total"><label>Total</label><span className={calculateStockTotal(selectedArticle) > 0 ? "positive" : "zero"}>{formatStock(calculateStockTotal(selectedArticle))}</span></div>
-                      {DEPOT_KEYS.map((key) => (
+                      {DEPOT_KEYS.map((key, i) => (
                         <div key={key} className="stock-item">
-                          <label>{mappingEntrepots[key] || key}</label>
+                          <label>{mappingEntrepots[DEPOT_LABELS[i]] || DEPOT_LABELS[i]}</label>
                           <span className={parseFloat(selectedArticle[key]) > 0 ? "positive" : "zero"}>{formatStock(selectedArticle[key])}</span>
                         </div>
                       ))}
-                      <div className="stock-item"><label>RESERV</label><span className="reserved">{formatStock(selectedArticle.RESERV)}</span></div>
-                      <div className="stock-item"><label>SMINI</label><span>{formatStock(selectedArticle.SMINI)}</span></div>
+                      <div className="stock-item"><label>RESERV</label><span className="reserved">{formatStock(selectedArticle.reserve)}</span></div>
+                      <div className="stock-item"><label>SMINI</label><span>{formatStock(selectedArticle.stockMini)}</span></div>
                     </div>
                     {calculateStockTotal(selectedArticle) > 0 && (
                       <div className="stock-value-line">Valeur stock HT : <strong>{formatPrice(calculateStockValueHT(selectedArticle))}</strong></div>
                     )}
                   </div>
 
-                  {(selectedArticle.GISM1 || selectedArticle.GISM2 || selectedArticle.GISM3 || selectedArticle.PLACE) && (
+                  {(selectedArticle.gism1 || selectedArticle.gism2 || selectedArticle.gism3 || selectedArticle.place) && (
                     <div className="info-block gisement-block">
                       <h4><HiLocationMarker /> Emplacements</h4>
                       <div className="gisement-grid">
-                        {selectedArticle.PLACE && <div className="gisement-item main"><label>PLACE</label><span>{safeTrim(selectedArticle.PLACE)}</span></div>}
-                        {[1,2,3,4,5].map((n) => selectedArticle[`GISM${n}`] && <div key={n} className="gisement-item"><label>GISM{n}</label><span>{safeTrim(selectedArticle[`GISM${n}`])}</span></div>)}
+                        {selectedArticle.place && <div className="gisement-item main"><label>PLACE</label><span>{selectedArticle.place}</span></div>}
+                        {[1,2,3,4,5].map((n) => selectedArticle[`gism${n}`] && <div key={n} className="gisement-item"><label>GISM{n}</label><span>{selectedArticle[`gism${n}`]}</span></div>)}
                       </div>
                     </div>
                   )}
@@ -764,15 +751,15 @@ const AdminFournisseurInfosScreen = () => {
                   <div className="info-block dates-block">
                     <h4><HiCalendar /> Dates</h4>
                     <div className="info-grid">
-                      <div className="info-item"><label>CREATION</label><span className="value">{formatDate(selectedArticle.CREATION)}</span></div>
-                      <div className="info-item"><label>DATINV</label><span className="value">{formatDate(selectedArticle.DATINV)}</span></div>
-                      {selectedArticle.DPROMOD && <div className="info-item"><label>DPROMOD</label><span className="value">{formatDate(selectedArticle.DPROMOD)}</span></div>}
-                      {selectedArticle.DPROMOF && <div className="info-item"><label>DPROMOF</label><span className="value">{formatDate(selectedArticle.DPROMOF)}</span></div>}
+                      <div className="info-item"><label>CREATION</label><span className="value">{formatDate(selectedArticle.dateCreation)}</span></div>
+                      <div className="info-item"><label>DATINV</label><span className="value">{formatDate(selectedArticle.dateInventaire)}</span></div>
+                      {selectedArticle.datePromoDebut && <div className="info-item"><label>DPROMOD</label><span className="value">{formatDate(selectedArticle.datePromoDebut)}</span></div>}
+                      {selectedArticle.datePromoFin && <div className="info-item"><label>DPROMOF</label><span className="value">{formatDate(selectedArticle.datePromoFin)}</span></div>}
                     </div>
                   </div>
 
-                  {safeTrim(selectedArticle.OBSERV) && (
-                    <div className="info-block observations-block"><h4><HiAnnotation /> OBSERV</h4><p className="observations-text">{safeTrim(selectedArticle.OBSERV)}</p></div>
+                  {selectedArticle.observation && (
+                    <div className="info-block observations-block"><h4><HiAnnotation /> OBSERV</h4><p className="observations-text">{selectedArticle.observation}</p></div>
                   )}
                 </div>
               </div>
