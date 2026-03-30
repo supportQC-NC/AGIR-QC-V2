@@ -23,10 +23,10 @@ import NotFound from "./screens/NotFoundScreen/NotFoundScreen";
 
 import UserDashboard from "./screens/user/userDashboardScreen";
 import AdminDashboard from "./screens/admin/AdminDashboardScreen";
-import AdminFournisseursScreen from "./screens/Admin/AdminFournisseursScreen";
-import AdminFournisseurInfosScreen from "./screens/Admin/AdminFournisseurInfosScreen";
-import AdminArticles from "./screens/Admin/AdminArticlesScreen";
-import AdminArticleInfosScreen from "./screens/Admin/AdminArticleInfosScreen";
+import AdminFournisseursScreen from "./screens/admin/adminFournisseursScreen";
+import AdminFournisseurInfosScreen from "./screens/admin/AdminFournisseurInfosScreen";
+import AdminArticles from "./screens/admin/AdminArticlesScreen";
+import AdminArticleInfosScreen from "./screens/admin/AdminArticleInfosScreen";
 
 // 🔹 DashboardRedirect - redirige selon rôle
 const DashboardRedirect = () => {
