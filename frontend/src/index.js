@@ -15,7 +15,7 @@ import "./index.css";
 import App from "./App";
 import PrivateRoute from "./components/Utils/PrivateRoute";
 import AdminRoute from "./components/Utils/AdminRoute";
-
+import AdminUsers from "./screens/admin/AdminUsersScreen";
 import Login from "./screens/LoginScreen/LoginScreen";
 import ForgotPassword from "./screens/ForgotPasswordScreen/ForgotPasswordScreen";
 import ResetPassword from "./screens/ResetPasswordScreen/ResetPasswordScreen";
@@ -57,6 +57,7 @@ const router = createBrowserRouter(
       {/* Routes admin */}
       <Route element={<AdminRoute />}>
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
       </Route>
 
       {/* 404 */}
