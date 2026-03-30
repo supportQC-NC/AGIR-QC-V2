@@ -10,7 +10,8 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "data:import": "node backend/seeder.js",
     "data:destroy": "node backend/seeder.js -d",
-    "import:fournisseurs": "node backend/scripts/importFournisseurs.js"
+    "import:fournisseurs": "node backend/scripts/importDBF.js fourniss.dbf",
+    "import:all": "node backend/scripts/importDBF.js"
   },
   "author": "",
   "license": "ISC",
