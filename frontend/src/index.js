@@ -20,7 +20,8 @@ import Login from "./screens/LoginScreen/LoginScreen";
 import ForgotPassword from "./screens/ForgotPasswordScreen/ForgotPasswordScreen";
 import ResetPassword from "./screens/ResetPasswordScreen/ResetPasswordScreen";
 import NotFound from "./screens/NotFoundScreen/NotFoundScreen";
-
+import AdminTachesCronScreen from "./screens/admin/AdminTachesCronScreen";
+import AdminOutilsScreen from "./screens/admin/AdminOutilsScreen";
 import UserDashboard from "./screens/user/userDashboardScreen";
 import AdminDashboard from "./screens/admin/AdminDashboardScreen";
 import AdminEntreprises from "./screens/admin/AdminEntreprisesScreen";
@@ -61,6 +62,8 @@ const router = createBrowserRouter(
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/entreprises" element={<AdminEntreprises />} />
         <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/outils" element={<AdminOutilsScreen />} />
+        <Route path="/admin/taches-cron" element={<AdminTachesCronScreen />} />
 
       </Route>
 

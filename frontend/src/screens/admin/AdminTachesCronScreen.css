@@ -1,0 +1,1864 @@
+/* src/screens/admin/AdminTachesCronScreen.css */
+
+/* ==========================================
+   LAYOUT PRINCIPAL
+   ========================================== */
+.admin-taches-cron {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.admin-taches-cron-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-taches-cron-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.admin-taches-cron-header h1 svg {
+  color: var(--accent);
+}
+
+.admin-taches-cron-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================
+   STATS
+   ========================================== */
+.admin-taches-cron-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stat-card.en-cours {
+  border-color: var(--warning);
+}
+
+.stat-card.en-cours .stat-value {
+  color: var(--warning);
+}
+
+.stat-card.erreur {
+  border-color: var(--danger);
+}
+
+.stat-card.erreur .stat-value {
+  color: var(--danger);
+}
+
+.stat-card.succes .stat-value {
+  color: var(--success);
+}
+
+/* ==========================================
+   GRILLE DES TÂCHES
+   ========================================== */
+.admin-taches-cron-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+/* ==========================================
+   CARTE TÂCHE CRON
+   ========================================== */
+.tache-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.tache-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tache-card.inactive {
+  opacity: 0.6;
+}
+
+.tache-card.inactive:hover {
+  opacity: 0.8;
+}
+
+.tache-card.en-cours {
+  border-color: var(--warning);
+  box-shadow:
+    0 0 0 1px var(--warning),
+    0 4px 12px rgba(234, 179, 8, 0.15);
+}
+
+.tache-card.en-erreur {
+  border-color: var(--danger);
+}
+
+/* Header */
+.tache-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+}
+
+.tache-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--accent);
+}
+
+.tache-header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* Statut badges */
+.statut-badge {
+  padding: 4px 8px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.statut-badge.active {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--success);
+}
+
+.statut-badge.inactive {
+  background: rgba(102, 102, 102, 0.15);
+  color: var(--text-muted);
+}
+
+.statut-badge.en_cours {
+  background: rgba(234, 179, 8, 0.15);
+  color: var(--warning);
+}
+
+.statut-badge.erreur {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+/* Indicateur pulsation en cours */
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warning);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.7);
+  }
+}
+
+/* Body */
+.tache-card-body {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tache-titre {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tache-description {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Commande affichée */
+.tache-commande {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  font-size: 11px;
+  color: var(--accent);
+  overflow: hidden;
+}
+
+.tache-commande svg {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.tache-commande code {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Meta infos */
+.tache-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.meta-item svg {
+  font-size: 14px;
+  color: var(--accent);
+}
+
+/* Fréquence */
+.tache-frequence {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.tache-frequence svg {
+  color: var(--accent);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.tache-frequence code {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+/* Dernière exécution */
+.tache-derniere-exec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.tache-derniere-exec svg {
+  color: var(--accent);
+}
+
+.derniere-exec-statut {
+  font-weight: 600;
+}
+
+.derniere-exec-statut.succes {
+  color: var(--success);
+}
+
+.derniere-exec-statut.erreur {
+  color: var(--danger);
+}
+
+.derniere-exec-statut.timeout {
+  color: var(--warning);
+}
+
+.derniere-exec-statut.annule {
+  color: var(--text-muted);
+}
+
+/* Stats exécutions */
+.tache-exec-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.exec-stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.exec-stat.succes {
+  color: var(--success);
+}
+
+.exec-stat.erreur {
+  color: var(--danger);
+}
+
+/* Footer */
+.tache-card-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tache-card-footer .card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Bouton exécuter */
+.btn-executer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-executer:hover {
+  background: var(--accent-hover);
+  transform: scale(1.03);
+}
+
+.btn-executer:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-executer.running {
+  background: var(--warning);
+  cursor: pointer;
+  opacity: 1;
+}
+
+.btn-executer.running:hover {
+  background: #d97706;
+}
+
+/* Spinner */
+.spinner-sm {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* btn-action override spécifique */
+.btn-action.btn-history:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+.btn-action.btn-logs:hover {
+  border-color: #10b981;
+  color: #10b981;
+}
+
+/* ==========================================
+   MODAL
+   ========================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.modal-content.large {
+  max-width: 800px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-tertiary);
+}
+
+.modal-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-header h2 svg {
+  color: var(--accent);
+}
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-tertiary);
+}
+
+/* ==========================================
+   FORMULAIRE
+   ========================================== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.form-group label .required {
+  color: var(--danger);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--accent);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}
+
+.form-group input.mono,
+.form-group textarea.mono {
+  font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  font-size: 12px;
+}
+
+.form-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Boutons du modal */
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--danger);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-primary:disabled,
+.btn-danger:disabled,
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   MODAL HISTORIQUE / LOGS
+   ========================================== */
+.executions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.execution-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.execution-item:hover {
+  border-color: var(--accent);
+  background: var(--bg-tertiary);
+}
+
+.execution-statut-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.execution-statut-dot.succes {
+  background: var(--success);
+}
+
+.execution-statut-dot.erreur {
+  background: var(--danger);
+}
+
+.execution-statut-dot.timeout {
+  background: var(--warning);
+}
+
+.execution-statut-dot.annule {
+  background: var(--text-muted);
+}
+
+.execution-statut-dot.en_cours {
+  background: var(--warning);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.execution-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.execution-info-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.execution-info-top .statut-text {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.execution-info-top .statut-text.succes {
+  color: var(--success);
+}
+.execution-info-top .statut-text.erreur {
+  color: var(--danger);
+}
+.execution-info-top .statut-text.timeout {
+  color: var(--warning);
+}
+.execution-info-top .statut-text.annule {
+  color: var(--text-muted);
+}
+.execution-info-top .statut-text.en_cours {
+  color: var(--warning);
+}
+
+.execution-info-bottom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.execution-duree {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Détail log */
+.execution-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.execution-detail-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background: var(--bg-primary);
+  border-radius: 6px;
+}
+
+.detail-field .label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.detail-field .value {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.log-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.log-section-title svg {
+  font-size: 14px;
+}
+
+.log-section-title.stdout svg {
+  color: var(--success);
+}
+.log-section-title.stderr svg {
+  color: var(--danger);
+}
+
+.log-output {
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #c9d1d9;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.log-output.stderr {
+  color: #f87171;
+}
+
+.log-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* Pagination modal */
+.modal-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.modal-pagination button {
+  padding: 4px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.modal-pagination button:hover {
+  border-color: var(--accent);
+}
+
+.modal-pagination button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.modal-pagination span {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+@media (max-width: 1024px) {
+  .admin-taches-cron-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-taches-cron-actions {
+    width: 100%;
+  }
+
+  .search-box {
+    flex: 1;
+  }
+
+  .search-box input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-taches-cron-stats {
+    width: 100%;
+  }
+
+  .stat-card {
+    flex: 1;
+    min-width: 70px;
+    padding: 10px 12px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .admin-taches-cron-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-select {
+    flex: 1;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .execution-detail-header {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn-primary span {
+    display: none;
+  }
+
+  .btn-executer span {
+    display: none;
+  }
+
+  .admin-taches-cron-actions {
+    flex-wrap: wrap;
+  }
+
+  .checkbox-label span {
+    display: none;
+  }
+}
+
+.admin-taches-cron {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+.admin-taches-cron-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.admin-taches-cron-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.admin-taches-cron-header h1 svg {
+  color: var(--accent);
+}
+.admin-taches-cron-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.admin-taches-cron-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.stat-card.en-cours {
+  border-color: var(--warning);
+}
+.stat-card.en-cours .stat-value {
+  color: var(--warning);
+}
+.stat-card.erreur {
+  border-color: var(--danger);
+}
+.stat-card.erreur .stat-value {
+  color: var(--danger);
+}
+.admin-taches-cron-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+.tache-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.2s;
+  max-height: 390px;
+}
+.tache-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.tache-card.inactive {
+  opacity: 0.6;
+}
+.tache-card.inactive:hover {
+  opacity: 0.8;
+}
+.tache-card.en-cours {
+  border-color: var(--warning);
+  box-shadow:
+    0 0 0 1px var(--warning),
+    0 4px 12px rgba(234, 179, 8, 0.15);
+}
+.tache-card.en-erreur {
+  border-color: var(--danger);
+}
+.tache-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+}
+.tache-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--accent);
+}
+.tache-header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.statut-badge {
+  padding: 4px 8px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.statut-badge.active {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--success);
+}
+.statut-badge.inactive {
+  background: rgba(102, 102, 102, 0.15);
+  color: var(--text-muted);
+}
+.statut-badge.en_cours {
+  background: rgba(234, 179, 8, 0.15);
+  color: var(--warning);
+}
+.statut-badge.erreur {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warning);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.7);
+  }
+}
+.tache-card-body {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tache-titre {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+.tache-description {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+.tache-commande {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  font-size: 11px;
+  color: var(--accent);
+  overflow: hidden;
+}
+.tache-commande svg {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.tache-commande code {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tache-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.meta-item svg {
+  font-size: 12px;
+}
+.tache-frequence {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.tache-frequence svg {
+  color: var(--accent);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.tache-frequence code {
+  font-family: "JetBrains Mono", monospace;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+.tache-derniere-exec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.tache-derniere-exec svg {
+  color: var(--accent);
+}
+.derniere-exec-statut {
+  font-weight: 600;
+}
+.derniere-exec-statut.succes {
+  color: var(--success);
+}
+.derniere-exec-statut.erreur {
+  color: var(--danger);
+}
+.derniere-exec-statut.timeout {
+  color: var(--warning);
+}
+.derniere-exec-statut.annule {
+  color: var(--text-muted);
+}
+.tache-exec-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.exec-stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.exec-stat.succes {
+  color: var(--success);
+}
+.exec-stat.erreur {
+  color: var(--danger);
+}
+.outil-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tag {
+  padding: 2px 8px;
+  font-size: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+}
+.tag.more {
+  color: var(--text-muted);
+  font-style: italic;
+}
+.tache-card-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tache-card-footer .card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-executer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-executer:hover {
+  background: var(--accent-hover);
+  transform: scale(1.03);
+}
+.btn-executer:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-executer.running {
+  background: var(--warning);
+  cursor: pointer;
+  opacity: 1;
+}
+.btn-executer.running:hover {
+  background: #d97706;
+}
+.spinner-sm {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.btn-action.btn-history:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+.modal-content.large {
+  max-width: 800px;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-tertiary);
+}
+.modal-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.modal-header h2 svg {
+  color: var(--accent);
+}
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modal-close:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-tertiary);
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.form-group label .required {
+  color: var(--danger);
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--accent);
+}
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}
+.form-group input.mono,
+.form-group textarea.mono {
+  font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  font-size: 12px;
+}
+.form-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.arg-row {
+  padding: 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 6px;
+}
+.arg-fields {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.arg-input {
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+  background: var(--bg-secondary) !important;
+  flex: 1;
+  min-width: 100px;
+}
+.arg-input.arg-desc {
+  flex: 2;
+  min-width: 150px;
+}
+.arg-default-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.arg-default-toggle input {
+  accent-color: var(--accent);
+}
+.args-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.arg-chip {
+  padding: 12px;
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.arg-chip:hover {
+  border-color: var(--accent);
+  background: var(--bg-tertiary);
+}
+.arg-chip.selected {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+}
+.arg-chip-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.arg-chip-header input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+.arg-chip-nom {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.arg-chip-valeur {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.arg-chip-desc {
+  margin: 6px 0 0 26px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.executions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.execution-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.execution-item:hover {
+  border-color: var(--accent);
+  background: var(--bg-tertiary);
+}
+.execution-statut-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.execution-statut-dot.succes {
+  background: var(--success);
+}
+.execution-statut-dot.erreur {
+  background: var(--danger);
+}
+.execution-statut-dot.timeout {
+  background: var(--warning);
+}
+.execution-statut-dot.annule {
+  background: var(--text-muted);
+}
+.execution-statut-dot.en_cours {
+  background: var(--warning);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.execution-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.execution-info-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.execution-info-top .statut-text {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.execution-info-top .statut-text.succes {
+  color: var(--success);
+}
+.execution-info-top .statut-text.erreur {
+  color: var(--danger);
+}
+.execution-info-top .statut-text.timeout {
+  color: var(--warning);
+}
+.execution-info-top .statut-text.annule {
+  color: var(--text-muted);
+}
+.execution-info-top .statut-text.en_cours {
+  color: var(--warning);
+}
+.execution-info-bottom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.execution-duree {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.execution-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.execution-detail-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background: var(--bg-primary);
+  border-radius: 6px;
+}
+.detail-field .label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.detail-field .value {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.log-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.log-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.log-section-title svg {
+  font-size: 14px;
+}
+.log-section-title.stdout svg {
+  color: var(--success);
+}
+.log-section-title.stderr svg {
+  color: var(--danger);
+}
+.log-output {
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #c9d1d9;
+  max-height: 300px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+}
+.log-output.stderr {
+  color: #f87171;
+  background: #1a0a0a;
+  border-color: #7f1d1d;
+}
+.log-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+}
+.fichiers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fichier-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.fichier-item:hover {
+  border-color: var(--accent);
+}
+.fichier-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.fichier-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.fichier-nom {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fichier-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.fichier-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.modal-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 12px;
+}
+.modal-pagination button {
+  padding: 4px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.modal-pagination button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.modal-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.modal-pagination span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px;
+  color: var(--text-muted);
+  grid-column: 1/-1;
+}
+.no-data svg {
+  font-size: 32px;
+}
+.admin-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.admin-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--danger);
+  font-size: 14px;
+}
+@media (max-width: 768px) {
+  .admin-taches-cron-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .execution-detail-header {
+    grid-template-columns: 1fr;
+  }
+  .admin-taches-cron-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .admin-taches-cron-actions {
+    width: 100%;
+  }
+}
+
+
+
+/* ==========================================
+   AJOUTS POUR DOCUMENTATION
+   À ajouter à la fin de AdminTachesCronScreen.css
+   ========================================== */
+
+/* Badge compteur documentation dans le header de la carte */
+.doc-count-badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  font-size: 9px;
+  font-weight: 600;
+  border-radius: 4px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+}
+
+.doc-count-badge svg {
+  font-size: 11px;
+}
+
+/* Bouton documentation dans le footer */
+.btn-action.btn-doc:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+}

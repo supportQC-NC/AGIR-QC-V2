@@ -13,7 +13,9 @@ import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import entrepriseRoutes from "./routes/entrepriseRoutes.js";
 import filialeRoutes from "./routes/fillialeRoutes.js";
-
+import outilRoutes from "./routes//outilRoutes.js";
+// ========== ROUTES TÂCHES CRON ==========
+import tacheCronRoutes from "./routes/tacheCronRoutes.js";
 // =======================================
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
@@ -66,7 +68,11 @@ uploadDirs.forEach((dir) => {
 app.use("/api/users", userRoutes);
 app.use("/api/entreprises", entrepriseRoutes);
 app.use("/api/filiales", filialeRoutes);
+// ========== ROUTES OUTILS ==========
+app.use("/api/outils", outilRoutes);
 
+// ========== ROUTES TÂCHES CRON ==========
+app.use("/api/taches-cron", tacheCronRoutes);
 
 // ==========================================
 // FRONTEND EN PRODUCTION
