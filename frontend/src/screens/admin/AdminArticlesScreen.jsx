@@ -308,10 +308,30 @@ const AdminArticlesScreen = () => {
 
   const formatDate = (dateValue) => {
     if (!dateValue) return "-";
-    if (typeof dateValue === "string" && dateValue.length === 8) {
-      return `${dateValue.substring(6, 8)}/${dateValue.substring(4, 6)}/${dateValue.substring(0, 4)}`;
+    // Format DBF brut : "20240115" → "15/01/2024"
+    if (typeof dateValue === "string" && dateValue.length === 8 && /^\d{8}$/.test(dateValue)) {
+      const y = parseInt(dateValue.substring(0, 4));
+      const m = parseInt(dateValue.substring(4, 6));
+      const d = parseInt(dateValue.substring(6, 8));
+      if (y > 0 && m >= 1 && m <= 12 && d >= 1 && d <= 31)
+        return `${d.toString().padStart(2, "0")}/${m.toString().padStart(2, "0")}/${y}`;
+      return "-";
     }
-    if (dateValue instanceof Date) return dateValue.toLocaleDateString("fr-FR");
+    // String ISO de Mongoose : "2024-01-15T00:00:00.000Z"
+    if (typeof dateValue === "string") {
+      const parsed = new Date(dateValue);
+      if (!isNaN(parsed.getTime())) return parsed.toLocaleDateString("fr-FR");
+      return "-";
+    }
+    // Objet Date natif
+    if (dateValue instanceof Date) {
+      return isNaN(dateValue.getTime()) ? "-" : dateValue.toLocaleDateString("fr-FR");
+    }
+    // Timestamp numérique
+    if (typeof dateValue === "number") {
+      const parsed = new Date(dateValue);
+      return isNaN(parsed.getTime()) ? "-" : parsed.toLocaleDateString("fr-FR");
+    }
     return "-";
   };
 

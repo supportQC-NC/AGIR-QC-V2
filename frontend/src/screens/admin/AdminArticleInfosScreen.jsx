@@ -374,8 +374,10 @@ const AdminArticleInfosScreen = () => {
 
   const formatDate = (dateValue) => {
     if (!dateValue) return "-";
-    if (dateValue instanceof Date) return isNaN(dateValue.getTime()) ? "-" : dateValue.toLocaleDateString("fr-FR");
+    // String ISO de Mongoose : "2024-01-15T00:00:00.000Z"
+    // OU format DBF brut : "20240115"
     if (typeof dateValue === "string") {
+      // Format DBF brut
       if (dateValue.length === 8 && /^\d{8}$/.test(dateValue)) {
         const y = parseInt(dateValue.substring(0, 4));
         const m = parseInt(dateValue.substring(4, 6));
@@ -384,9 +386,13 @@ const AdminArticleInfosScreen = () => {
           return `${d.toString().padStart(2, "0")}/${m.toString().padStart(2, "0")}/${y}`;
         return "-";
       }
+      // String ISO ou autre format de date
       const parsed = new Date(dateValue);
       return !isNaN(parsed.getTime()) ? parsed.toLocaleDateString("fr-FR") : "-";
     }
+    // Objet Date natif
+    if (dateValue instanceof Date) return isNaN(dateValue.getTime()) ? "-" : dateValue.toLocaleDateString("fr-FR");
+    // Timestamp numérique
     if (typeof dateValue === "number") {
       const parsed = new Date(dateValue);
       return !isNaN(parsed.getTime()) ? parsed.toLocaleDateString("fr-FR") : "-";
@@ -1004,4 +1010,3 @@ const AdminArticleInfosScreen = () => {
 };
 
 export default AdminArticleInfosScreen;
-
