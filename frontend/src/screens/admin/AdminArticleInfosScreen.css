@@ -1,9 +1,4 @@
-/* /* ==========================================================================
-   Admin Article Infos Screen - Detailed Article View
-   SCOPED STYLES - No global :root variables to avoid conflicts
-   ========================================================================== */
 
-/* Page Container with scoped CSS variables */
 .admin-article-infos-page {
   --aais-bg: #0a0a0f;
   --aais-bg-secondary: #12121a;
@@ -49,7 +44,7 @@
   flex-direction: column;
 }
 
-/* Loading & Error States */
+
 .admin-article-infos-page .loading-state,
 .admin-article-infos-page .error-state,
 .admin-article-infos-page .empty-state {
