@@ -22,7 +22,7 @@ import ResetPassword from "./screens/ResetPasswordScreen/ResetPasswordScreen";
 import NotFound from "./screens/NotFoundScreen/NotFoundScreen";
 import AdminTachesCronScreen from "./screens/admin/AdminTachesCronScreen";
 import AdminOutilsScreen from "./screens/admin/AdminOutilsScreen";
-import UserDashboard from "./screens/User/userDashboardScreen";
+import UserDashboard from "./screens/User/UserDashboardScreen";
 import AdminDashboard from "./screens/admin/AdminDashboardScreen";
 import AdminEntreprises from "./screens/admin/AdminEntreprisesScreen";
 import AdminConcurrents from "./screens/admin/AdminConcurrentsScreen";
