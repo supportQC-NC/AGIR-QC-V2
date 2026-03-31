@@ -636,9 +636,6 @@
   cursor: not-allowed;
 }
 
-/* ==========================================
-   MODAL HISTORIQUE / LOGS
-   ========================================== */
 .executions-list {
   display: flex;
   flex-direction: column;
