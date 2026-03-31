@@ -1371,12 +1371,12 @@ class ArticleCacheService {
       });
     }
 
-    // Filtre: Fournisseur
+    // Filtre: Fournisseur (match exact sur le code numérique)
     if (fourn) {
-      const fournLower = fourn.toString().toLowerCase();
+      const fournNum = parseInt(fourn);
       filteredRecords = filteredRecords.filter((record) => {
-        const fournVal = this.safeTrim(record.FOURN).toLowerCase();
-        return fournVal.includes(fournLower);
+        const recordFourn = parseInt(record.FOURN);
+        return recordFourn === fournNum;
       });
     }
 
@@ -1708,16 +1708,16 @@ class ArticleCacheService {
   async getSupplierStats(entreprise, fournCode) {
     const cache = await this.getArticles(entreprise);
 
-    const targetCode = String(fournCode).trim().toLowerCase();
+    const targetCode = parseInt(fournCode);
     const stockKeys = ["S1", "S2", "S3", "S4", "S5"];
 
     let total = 0;
     let deprecatedCount = 0;
 
     cache.records.forEach((record) => {
-      const recordCode = this.safeTrim(record.FOURN).toLowerCase();
+      const recordCode = parseInt(record.FOURN);
 
-      if (recordCode.includes(targetCode)) {
+      if (recordCode === targetCode) {
         total++;
 
         const design = (record.DESIGN || "").trim();
