@@ -35,7 +35,7 @@ import AdminClientsScreen from "./screens/admin/AdminClientsScreen";
 // Admin
 
 import AdminReapproScreen from "./screens/admin/AdminReapproScreen";
-
+import ProfileScreen from "./screens/User/ProfileScreen";
 import ArticleSearch from "./screens/User/UserArticleSearch";
 import UserReappro from "./screens/User/UserReappro";
 import AdminCommandesScreen from "./screens/admin/AdminCommandesScreen";
@@ -78,6 +78,7 @@ const router = createBrowserRouter(
         <Route path="/dashboard" element={<UserDashboard />} />
                 <Route path="/articles" element={<ArticleSearch />} />
         <Route path="/reappro" element={<UserReappro />} />
+           <Route path="/profile" element={<ProfileScreen />} />
       </Route>
 
       {/* Routes admin */}
