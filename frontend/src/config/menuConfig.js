@@ -85,6 +85,11 @@ export const adminMenuStructure = [
         label: "Clients",
         path: "/admin/clients",
         icon: HiCube,
+      },
+      {
+        label: "Concurrents",
+        path: "/admin/concurrents",
+        icon: HiCube,
       }
 
     ],

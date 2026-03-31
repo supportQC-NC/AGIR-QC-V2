@@ -10,7 +10,11 @@ export const apiSlice = createApi({
   tagTypes: [
     "User",
     "Entreprise",
-  
+    "Concurrent",
+    "Filiale",
+    "Outil",
+    "TacheCron",
+    "ExecutionCron",
   ],
   endpoints: (builder) => ({}),
 });

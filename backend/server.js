@@ -13,7 +13,13 @@ import connectDB from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import entrepriseRoutes from "./routes/entrepriseRoutes.js";
 import filialeRoutes from "./routes/fillialeRoutes.js";
+import demandeReapproRoutes from "./routes/demandeReapproRoutes.js";
+import reapproRoutes from "./routes/reaproRoutes.js";
 import outilRoutes from "./routes//outilRoutes.js";
+import concurrentRoutes from "./routes/concurrentRoutes.js";
+import articleRoutes from "./routes/articleRoutes.js";
+import commandeRoutes from "./routes/commandeRoutes.js";
+import fournissRoutes from "./routes/fournissRoutes.js";
 // ========== ROUTES TÂCHES CRON ==========
 import tacheCronRoutes from "./routes/tacheCronRoutes.js";
 // =======================================
@@ -68,12 +74,17 @@ uploadDirs.forEach((dir) => {
 app.use("/api/users", userRoutes);
 app.use("/api/entreprises", entrepriseRoutes);
 app.use("/api/filiales", filialeRoutes);
+app.use("/api/articles", articleRoutes);
+app.use("/api/fournisseurs", fournissRoutes);
 // ========== ROUTES OUTILS ==========
 app.use("/api/outils", outilRoutes);
 
 // ========== ROUTES TÂCHES CRON ==========
 app.use("/api/taches-cron", tacheCronRoutes);
-
+app.use("/api/concurrents", concurrentRoutes);
+app.use("/api/demandes-reappro", demandeReapproRoutes);
+app.use("/api/reappros", reapproRoutes);
+app.use("/api/commandes", commandeRoutes);
 // ==========================================
 // FRONTEND EN PRODUCTION
 // ==========================================

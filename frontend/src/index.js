@@ -25,6 +25,11 @@ import AdminOutilsScreen from "./screens/admin/AdminOutilsScreen";
 import UserDashboard from "./screens/user/userDashboardScreen";
 import AdminDashboard from "./screens/admin/AdminDashboardScreen";
 import AdminEntreprises from "./screens/admin/AdminEntreprisesScreen";
+import AdminConcurrents from "./screens/admin/AdminConcurrentsScreen";
+import AdminArticleInfosScreen from "./screens/admin/AdminArticleInfosScreen";
+import AdminArticles from "./screens/admin/AdminArticlesScreen";
+import AdminFournisseursScreen from "./screens/admin/AdminFournisseursScreen";
+import AdminFournisseurInfosScreen from "./screens/admin/AdminFournisseurInfosScreen";
 
 
 // 🔹 DashboardRedirect - redirige selon rôle
@@ -64,7 +69,12 @@ const router = createBrowserRouter(
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/outils" element={<AdminOutilsScreen />} />
         <Route path="/admin/taches-cron" element={<AdminTachesCronScreen />} />
-
+        <Route path="/admin/concurrents" element={<AdminConcurrents />} />
+                <Route path="/admin/fournisseurs" element={<AdminFournisseursScreen />} />
+        <Route path="/admin/fournisseurs/:nomDossierDBF" element={<AdminFournisseursScreen />} />
+        <Route path="/admin/fournisseurs/:nomDossierDBF/:fournId" element={<AdminFournisseurInfosScreen />} />
+          <Route path="/admin/articles" element={<AdminArticles />} />
+        <Route path="/admin/articles/:nomDossierDBF/:nart" element={<AdminArticleInfosScreen />} />
       </Route>
 
       {/* 404 */}
