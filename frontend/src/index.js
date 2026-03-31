@@ -26,10 +26,26 @@ import UserDashboard from "./screens/user/userDashboardScreen";
 import AdminDashboard from "./screens/admin/AdminDashboardScreen";
 import AdminEntreprises from "./screens/admin/AdminEntreprisesScreen";
 import AdminConcurrents from "./screens/admin/AdminConcurrentsScreen";
+import AdminClientDetailScreen from "./screens/admin/AdminClientDetailsScreen";
 import AdminArticleInfosScreen from "./screens/admin/AdminArticleInfosScreen";
 import AdminArticles from "./screens/admin/AdminArticlesScreen";
 import AdminFournisseursScreen from "./screens/admin/AdminFournisseursScreen";
 import AdminFournisseurInfosScreen from "./screens/admin/AdminFournisseurInfosScreen";
+import AdminClientsScreen from "./screens/admin/AdminClientsScreen";
+// Admin
+
+import AdminReapproScreen from "./screens/admin/AdminReapproScreen";
+
+import ArticleSearch from "./screens/User/UserArticleSearch";
+import UserReappro from "./screens/User/UserReappro";
+import AdminCommandesScreen from "./screens/admin/AdminCommandesScreen";
+import AdminCommandeDetailsScreen from "./screens/admin/AdminCommandeDetailsScreen";
+import AdminFacturesScreen from "./screens/admin/AdminFacturesScreen";
+import AdminFactureDetailScreen from "./screens/admin/AdminFactureDetailsScreen";
+
+
+import AdminDemandesReapproScreen from "./screens/admin/AdminDemandesReapproScreen";
+
 
 
 // 🔹 DashboardRedirect - redirige selon rôle
@@ -60,6 +76,8 @@ const router = createBrowserRouter(
       {/* Routes privées utilisateurs */}
       <Route element={<PrivateRoute />}>
         <Route path="/dashboard" element={<UserDashboard />} />
+                <Route path="/articles" element={<ArticleSearch />} />
+        <Route path="/reappro" element={<UserReappro />} />
       </Route>
 
       {/* Routes admin */}
@@ -75,6 +93,25 @@ const router = createBrowserRouter(
         <Route path="/admin/fournisseurs/:nomDossierDBF/:fournId" element={<AdminFournisseurInfosScreen />} />
           <Route path="/admin/articles" element={<AdminArticles />} />
         <Route path="/admin/articles/:nomDossierDBF/:nart" element={<AdminArticleInfosScreen />} />
+                <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/entreprises" element={<AdminEntreprises />} />
+        <Route path="/admin/reappros" element={<AdminReapproScreen />} />
+        <Route path="/admin/demandes-reappro" element={<AdminDemandesReapproScreen />} />
+        <Route path="/admin/articles" element={<AdminArticles />} />
+        <Route path="/admin/clients" element={<AdminClientsScreen />} />
+        <Route path="/admin/clients/:nomDossierDBF" element={<AdminClientsScreen />} />
+        <Route path="/admin/clients/:nomDossierDBF/:tiers" element={<AdminClientDetailScreen />} />
+             <Route path="/admin/concurrents" element={<AdminConcurrents />} />
+        <Route path="/admin/articles/:nomDossierDBF/:nart" element={<AdminArticleInfosScreen />} />
+        <Route path="/admin/commandes" element={<AdminCommandesScreen />} />
+        <Route path="/admin/commandes/:nomDossierDBF" element={<AdminCommandesScreen />} />
+        <Route path="/admin/commandes/:nomDossierDBF/:numcde" element={<AdminCommandeDetailsScreen />} />
+        <Route path="/admin/factures" element={<AdminFacturesScreen />} />
+        <Route path="/admin/factures/:nomDossierDBF" element={<AdminFacturesScreen />} />
+        <Route path="/admin/factures/:nomDossierDBF/:numfact" element={<AdminFactureDetailScreen />} />
+        <Route path="/admin/fournisseurs" element={<AdminFournisseursScreen />} />
+        <Route path="/admin/fournisseurs/:nomDossierDBF" element={<AdminFournisseursScreen />} />
+        <Route path="/admin/fournisseurs/:nomDossierDBF/:fournId" element={<AdminFournisseurInfosScreen />} />
       </Route>
 
       {/* 404 */}
