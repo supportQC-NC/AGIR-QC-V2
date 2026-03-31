@@ -1793,7 +1793,8 @@
   gap: 8px;
   padding: 40px;
   color: var(--text-muted);
-  grid-column: 1/-1;
+  grid-column-start: 1;
+  grid-column-end: -1;
 }
 .no-data svg {
   font-size: 32px;
@@ -1832,8 +1833,6 @@
     width: 100%;
   }
 }
-
-
 
 /* ==========================================
    AJOUTS POUR DOCUMENTATION
