@@ -14,11 +14,11 @@ const protect = asyncHandler(async (req, res, next) => {
       next();
     } catch (error) {
       res.status(401);
-      throw new Error("Token non valide");
+      throw new Error("Token non valide ou expiré. Merci de vous reconnecter");
     }
   } else {
     res.status(401);
-    throw new Error("Non autorisé, pas de token");
+    throw new Error("Accés Non autorisé, pas de token");
   }
 });
 

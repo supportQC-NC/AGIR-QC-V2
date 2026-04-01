@@ -11,18 +11,27 @@ import {
 import { Provider, useSelector } from "react-redux";
 import store from "./store";
 import "./index.css";
-
 import App from "./App";
+
+// utilitaire
 import PrivateRoute from "./components/Utils/PrivateRoute";
 import AdminRoute from "./components/Utils/AdminRoute";
 import AdminUsers from "./screens/admin/AdminUsersScreen";
+// public
 import Login from "./screens/LoginScreen/LoginScreen";
 import ForgotPassword from "./screens/ForgotPasswordScreen/ForgotPasswordScreen";
 import ResetPassword from "./screens/ResetPasswordScreen/ResetPasswordScreen";
 import NotFound from "./screens/NotFoundScreen/NotFoundScreen";
+
+//user
+import UserDashboard from "./screens/User/UserDashboardScreen";
+import ProfileScreen from "./screens/User/ProfileScreen";
+import ArticleSearch from "./screens/User/UserArticleSearch";
+import UserReappro from "./screens/User/UserReappro";
+
+// Admin
 import AdminTachesCronScreen from "./screens/admin/AdminTachesCronScreen";
 import AdminOutilsScreen from "./screens/admin/AdminOutilsScreen";
-import UserDashboard from "./screens/User/UserDashboardScreen";
 import AdminDashboard from "./screens/admin/AdminDashboardScreen";
 import AdminEntreprises from "./screens/admin/AdminEntreprisesScreen";
 import AdminConcurrents from "./screens/admin/AdminConcurrentsScreen";
@@ -32,21 +41,12 @@ import AdminArticles from "./screens/admin/AdminArticlesScreen";
 import AdminFournisseursScreen from "./screens/admin/AdminFournisseursScreen";
 import AdminFournisseurInfosScreen from "./screens/admin/AdminFournisseurInfosScreen";
 import AdminClientsScreen from "./screens/admin/AdminClientsScreen";
-// Admin
-
 import AdminReapproScreen from "./screens/admin/AdminReapproScreen";
-import ProfileScreen from "./screens/User/ProfileScreen";
-import ArticleSearch from "./screens/User/UserArticleSearch";
-import UserReappro from "./screens/User/UserReappro";
 import AdminCommandesScreen from "./screens/admin/AdminCommandesScreen";
 import AdminCommandeDetailsScreen from "./screens/admin/AdminCommandeDetailsScreen";
 import AdminFacturesScreen from "./screens/admin/AdminFacturesScreen";
 import AdminFactureDetailScreen from "./screens/admin/AdminFactureDetailsScreen";
-
-
 import AdminDemandesReapproScreen from "./screens/admin/AdminDemandesReapproScreen";
-
-
 
 // 🔹 DashboardRedirect - redirige selon rôle
 const DashboardRedirect = () => {
@@ -76,9 +76,9 @@ const router = createBrowserRouter(
       {/* Routes privées utilisateurs */}
       <Route element={<PrivateRoute />}>
         <Route path="/dashboard" element={<UserDashboard />} />
-                <Route path="/articles" element={<ArticleSearch />} />
+        <Route path="/articles" element={<ArticleSearch />} />
         <Route path="/reappro" element={<UserReappro />} />
-           <Route path="/profile" element={<ProfileScreen />} />
+        <Route path="/profile" element={<ProfileScreen />} />
       </Route>
 
       {/* Routes admin */}
@@ -89,36 +89,81 @@ const router = createBrowserRouter(
         <Route path="/admin/outils" element={<AdminOutilsScreen />} />
         <Route path="/admin/taches-cron" element={<AdminTachesCronScreen />} />
         <Route path="/admin/concurrents" element={<AdminConcurrents />} />
-                <Route path="/admin/fournisseurs" element={<AdminFournisseursScreen />} />
-        <Route path="/admin/fournisseurs/:nomDossierDBF" element={<AdminFournisseursScreen />} />
-        <Route path="/admin/fournisseurs/:nomDossierDBF/:fournId" element={<AdminFournisseurInfosScreen />} />
-          <Route path="/admin/articles" element={<AdminArticles />} />
-        <Route path="/admin/articles/:nomDossierDBF/:nart" element={<AdminArticleInfosScreen />} />
-                <Route path="/admin/users" element={<AdminUsers />} />
+        <Route
+          path="/admin/fournisseurs"
+          element={<AdminFournisseursScreen />}
+        />
+        <Route
+          path="/admin/fournisseurs/:nomDossierDBF"
+          element={<AdminFournisseursScreen />}
+        />
+        <Route
+          path="/admin/fournisseurs/:nomDossierDBF/:fournId"
+          element={<AdminFournisseurInfosScreen />}
+        />
+        <Route path="/admin/articles" element={<AdminArticles />} />
+        <Route
+          path="/admin/articles/:nomDossierDBF/:nart"
+          element={<AdminArticleInfosScreen />}
+        />
+        <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/entreprises" element={<AdminEntreprises />} />
         <Route path="/admin/reappros" element={<AdminReapproScreen />} />
-        <Route path="/admin/demandes-reappro" element={<AdminDemandesReapproScreen />} />
+        <Route
+          path="/admin/demandes-reappro"
+          element={<AdminDemandesReapproScreen />}
+        />
         <Route path="/admin/articles" element={<AdminArticles />} />
         <Route path="/admin/clients" element={<AdminClientsScreen />} />
-        <Route path="/admin/clients/:nomDossierDBF" element={<AdminClientsScreen />} />
-        <Route path="/admin/clients/:nomDossierDBF/:tiers" element={<AdminClientDetailScreen />} />
-             <Route path="/admin/concurrents" element={<AdminConcurrents />} />
-        <Route path="/admin/articles/:nomDossierDBF/:nart" element={<AdminArticleInfosScreen />} />
+        <Route
+          path="/admin/clients/:nomDossierDBF"
+          element={<AdminClientsScreen />}
+        />
+        <Route
+          path="/admin/clients/:nomDossierDBF/:tiers"
+          element={<AdminClientDetailScreen />}
+        />
+        <Route path="/admin/concurrents" element={<AdminConcurrents />} />
+        <Route
+          path="/admin/articles/:nomDossierDBF/:nart"
+          element={<AdminArticleInfosScreen />}
+        />
         <Route path="/admin/commandes" element={<AdminCommandesScreen />} />
-        <Route path="/admin/commandes/:nomDossierDBF" element={<AdminCommandesScreen />} />
-        <Route path="/admin/commandes/:nomDossierDBF/:numcde" element={<AdminCommandeDetailsScreen />} />
+        <Route
+          path="/admin/commandes/:nomDossierDBF"
+          element={<AdminCommandesScreen />}
+        />
+        <Route
+          path="/admin/commandes/:nomDossierDBF/:numcde"
+          element={<AdminCommandeDetailsScreen />}
+        />
         <Route path="/admin/factures" element={<AdminFacturesScreen />} />
-        <Route path="/admin/factures/:nomDossierDBF" element={<AdminFacturesScreen />} />
-        <Route path="/admin/factures/:nomDossierDBF/:numfact" element={<AdminFactureDetailScreen />} />
-        <Route path="/admin/fournisseurs" element={<AdminFournisseursScreen />} />
-        <Route path="/admin/fournisseurs/:nomDossierDBF" element={<AdminFournisseursScreen />} />
-        <Route path="/admin/fournisseurs/:nomDossierDBF/:fournId" element={<AdminFournisseurInfosScreen />} />
+        <Route
+          path="/admin/factures/:nomDossierDBF"
+          element={<AdminFacturesScreen />}
+        />
+        <Route
+          path="/admin/factures/:nomDossierDBF/:numfact"
+          element={<AdminFactureDetailScreen />}
+        />
+        <Route
+          path="/admin/fournisseurs"
+          element={<AdminFournisseursScreen />}
+        />
+        <Route
+          path="/admin/fournisseurs/:nomDossierDBF"
+          element={<AdminFournisseursScreen />}
+        />
+        <Route
+          path="/admin/fournisseurs/:nomDossierDBF/:fournId"
+          element={<AdminFournisseurInfosScreen />}
+        />
       </Route>
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
-    </Route>
-  )
+    </Route>,
+  ),
 );
 
 // 🔹 Render
@@ -128,5 +173,5 @@ root.render(
     <Provider store={store}>
       <RouterProvider router={router} />
     </Provider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
