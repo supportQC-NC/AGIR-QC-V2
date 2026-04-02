@@ -1,4 +1,3 @@
-
 // src/config/menuConfig.js
 import {
   HiUsers,
@@ -62,7 +61,7 @@ export const adminMenuStructure = [
         label: "Permissions",
         path: "/admin/permissions",
         icon: HiLockClosed,
-      }
+      },
     ],
   },
   {
@@ -90,8 +89,7 @@ export const adminMenuStructure = [
         label: "Concurrents",
         path: "/admin/concurrents",
         icon: HiCube,
-      }
-
+      },
     ],
   },
   {
@@ -134,12 +132,13 @@ export const moduleMenuStructure = [
         path: "/reappro",
         icon: HiRefresh,
       },
-
+      {
+        label: "Relevés",
+        path: "/admin/releves",
+        icon: HiDocumentReport,
+      },
     ],
   },
-
- 
-
 ];
 
 // Ancienne structure plate pour compatibilité (moduleMenus)
@@ -155,10 +154,6 @@ export const moduleMenus = {
     path: "/reappro",
     icon: HiRefresh,
   },
-
-
-
-
 };
 
 // =============================================
