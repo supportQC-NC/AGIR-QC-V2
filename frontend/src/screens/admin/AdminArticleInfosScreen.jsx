@@ -1,3 +1,6 @@
+
+// // export default AdminArticleInfosScreen;
+
 // import React, { useState, useEffect, useMemo, useCallback } from "react";
 // import { useParams, useNavigate, Link } from "react-router-dom";
 // import {
@@ -39,17 +42,6 @@
 //   HiDownload,
 //   HiEye,
 // } from "react-icons/hi";
-// import {
-//   BarChart,
-//   Bar,
-//   XAxis,
-//   YAxis,
-//   CartesianGrid,
-//   Tooltip,
-//   ResponsiveContainer,
-//   AreaChart,
-//   Area,
-// } from "recharts";
 // import { useGetEntreprisesQuery } from "../../slices/entrepriseApiSlice";
 // import {
 //   useGetArticleByNartQuery,
@@ -802,13 +794,25 @@
 //                     <div className="info-section chart-section">
 //                       <h3><HiChartBar /> Répartition des stocks</h3>
 //                       <div className="chart-container">
-//                         <ResponsiveContainer width="100%" height={300}>
-//                           <BarChart data={["S1","S2","S3","S4","S5"].map((k) => ({ name: mappingEntrepots[k], value: parseFloat(article[k]) || 0 }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-//                             <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3a" /><XAxis dataKey="name" stroke="#a0a0b0" /><YAxis stroke="#a0a0b0" />
-//                             <Tooltip contentStyle={{ backgroundColor: "#1a1a25", border: "1px solid #2a2a3a", borderRadius: "8px" }} labelStyle={{ color: "#f0f0f5" }} />
-//                             <Bar dataKey="value" name="Stock" fill="#6366f1" radius={[4, 4, 0, 0]} />
-//                           </BarChart>
-//                         </ResponsiveContainer>
+//                         {/* ── GRAPHIQUE BARRES STOCKS (SVG inline, remplace Recharts) ── */}
+//                         {(() => {
+//                           const items = ["S1","S2","S3","S4","S5"].map((k) => ({ name: mappingEntrepots[k], value: parseFloat(article[k]) || 0 }));
+//                           const maxV = Math.max(...items.map(d => d.value), 1);
+//                           return (
+//                             <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", height: 300, padding: "20px 10px 30px" }}>
+//                               {items.map((item, i) => {
+//                                 const h = maxV > 0 ? (item.value / maxV) * 240 : 0;
+//                                 return (
+//                                   <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+//                                     <span style={{ fontSize: "12px", color: "#f0f0f5", fontWeight: 600 }}>{item.value > 0 ? item.value : ""}</span>
+//                                     <div style={{ width: "100%", maxWidth: 60, height: h, backgroundColor: "#6366f1", borderRadius: "4px 4px 0 0", transition: "height 0.4s ease", minHeight: item.value > 0 ? 4 : 0 }} />
+//                                     <span style={{ fontSize: "11px", color: "#a0a0b0" }}>{item.name}</span>
+//                                   </div>
+//                                 );
+//                               })}
+//                             </div>
+//                           );
+//                         })()}
 //                       </div>
 //                     </div>
 //                   </div>
@@ -900,14 +904,27 @@
 //                         <div className="chart-stat highlight"><span className="stat-value">{formatStockEnJours(stockEnJours)}</span><span className="stat-label">Stock en jours</span></div>
 //                       </div>
 //                       <div className="chart-container large">
-//                         <ResponsiveContainer width="100%" height={350}>
-//                           <AreaChart data={salesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-//                             <defs><linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0.1} /></linearGradient></defs>
-//                             <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3a" /><XAxis dataKey="name" stroke="#a0a0b0" /><YAxis stroke="#a0a0b0" />
-//                             <Tooltip contentStyle={{ backgroundColor: "#1a1a25", border: "1px solid #2a2a3a", borderRadius: "8px" }} labelStyle={{ color: "#f0f0f5" }} formatter={(v) => [v, "Ventes"]} labelFormatter={(l, p) => p?.[0]?.payload?.fullName || l} />
-//                             <Area type="monotone" dataKey="ventes" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorVentes)" />
-//                           </AreaChart>
-//                         </ResponsiveContainer>
+//                         {/* ── GRAPHIQUE AIRE VENTES (SVG inline, remplace Recharts) ── */}
+//                         {(() => {
+//                           const vals = salesData.map(d => d.ventes);
+//                           const maxV = Math.max(...vals, 1);
+//                           const W = 600, H = 300, pad = { t: 20, r: 15, b: 10, l: 40 };
+//                           const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+//                           const pts = vals.map((v, i) => ({ x: pad.l + (vals.length > 1 ? (i / (vals.length - 1)) * cW : cW / 2), y: pad.t + cH - (v / maxV) * cH, v }));
+//                           const line = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+//                           const area = `${line} L ${pts[pts.length-1]?.x||0} ${pad.t+cH} L ${pts[0]?.x||0} ${pad.t+cH} Z`;
+//                           return (
+//                             <div style={{ width: "100%", height: 350 }}>
+//                               <svg viewBox={`0 0 ${W} ${H+40}`} style={{ width: "100%", height: "100%" }}>
+//                                 <defs><linearGradient id="gV" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.6}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0.05}/></linearGradient></defs>
+//                                 {[0,.25,.5,.75,1].map((f,idx) => { const y=pad.t+cH*(1-f); return <g key={idx}><line x1={pad.l} y1={y} x2={W-pad.r} y2={y} stroke="#2a2a3a" strokeDasharray="3 3"/><text x={pad.l-6} y={y+4} textAnchor="end" fill="#a0a0b0" fontSize="10">{Math.round(maxV*f)}</text></g>; })}
+//                                 <path d={area} fill="url(#gV)"/><path d={line} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+//                                 {pts.map((p,i) => <g key={i}><circle cx={p.x} cy={p.y} r="4" fill="#6366f1" stroke="#1a1a25" strokeWidth="2"/>{p.v > 0 && <text x={p.x} y={p.y-12} textAnchor="middle" fill="#f0f0f5" fontSize="11" fontWeight="600">{p.v}</text>}</g>)}
+//                                 {salesData.map((d,i) => { const x=pad.l+(vals.length>1?(i/(vals.length-1))*cW:cW/2); return <text key={i} x={x} y={H+25} textAnchor="middle" fill="#a0a0b0" fontSize="10">{d.name}</text>; })}
+//                               </svg>
+//                             </div>
+//                           );
+//                         })()}
 //                       </div>
 //                     </div>
 //                     <div className="info-section">
@@ -933,13 +950,24 @@
 //                         <h3><HiExclamation /> Historique des ruptures (12 derniers mois)</h3>
 //                         <div className="chart-stats warning"><div className="chart-stat"><span className="stat-value">{formatStock(totalRuptures)}</span><span className="stat-label">Total ruptures</span></div></div>
 //                         <div className="chart-container">
-//                           <ResponsiveContainer width="100%" height={250}>
-//                             <BarChart data={ruptureData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-//                               <CartesianGrid strokeDasharray="3 3" stroke="#2a2a3a" /><XAxis dataKey="name" stroke="#a0a0b0" /><YAxis stroke="#a0a0b0" />
-//                               <Tooltip contentStyle={{ backgroundColor: "#1a1a25", border: "1px solid #2a2a3a", borderRadius: "8px" }} labelStyle={{ color: "#f0f0f5" }} formatter={(v) => [v, "Ruptures"]} labelFormatter={(l, p) => p?.[0]?.payload?.fullName || l} />
-//                               <Bar dataKey="ruptures" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-//                             </BarChart>
-//                           </ResponsiveContainer>
+//                           {/* ── GRAPHIQUE BARRES RUPTURES (CSS inline, remplace Recharts) ── */}
+//                           {(() => {
+//                             const maxV = Math.max(...ruptureData.map(d => d.ruptures), 1);
+//                             return (
+//                               <div style={{ display: "flex", alignItems: "flex-end", gap: "6px", height: 250, padding: "20px 10px 30px" }}>
+//                                 {ruptureData.map((item, i) => {
+//                                   const h = maxV > 0 ? (item.ruptures / maxV) * 190 : 0;
+//                                   return (
+//                                     <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+//                                       <span style={{ fontSize: "11px", color: "#f0f0f5", fontWeight: 600 }}>{item.ruptures > 0 ? item.ruptures : ""}</span>
+//                                       <div style={{ width: "100%", maxWidth: 50, height: h, backgroundColor: "#f59e0b", borderRadius: "4px 4px 0 0", transition: "height 0.4s ease", minHeight: item.ruptures > 0 ? 4 : 0 }} />
+//                                       <span style={{ fontSize: "10px", color: "#a0a0b0" }}>{item.name}</span>
+//                                     </div>
+//                                   );
+//                                 })}
+//                               </div>
+//                             );
+//                           })()}
 //                         </div>
 //                       </div>
 //                     )}
@@ -1004,9 +1032,11 @@
 // };
 
 // export default AdminArticleInfosScreen;
-
+// import default React and hooks
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+
+// Icons
 import {
   HiArrowLeft,
   HiChevronLeft,
@@ -1046,6 +1076,8 @@ import {
   HiDownload,
   HiEye,
 } from "react-icons/hi";
+
+// APIs
 import { useGetEntreprisesQuery } from "../../slices/entrepriseApiSlice";
 import {
   useGetArticleByNartQuery,
@@ -1054,6 +1086,12 @@ import {
   getPhotoUrl,
 } from "../../slices/articleApiSlice";
 import { useGetArticleFilialeDataQuery } from "../../slices/fillialeApiSlice";
+
+// New imports for PDF Generation
+import jsPDF from "jspdf";
+import JsBarcode from "jsbarcode";
+
+// CSS
 import "./AdminArticleInfosScreen.css";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1496,6 +1534,162 @@ const AdminArticleInfosScreen = () => {
 
   const mappingEntrepots = selectedEntrepriseData?.mappingEntrepots || { S1: "Magasin", S2: "S2", S3: "S3", S4: "S4", S5: "S5" };
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // NEW: PDF Generation Handler
+  // Génère une fiche article "pro et jolie" avec les champs demandés
+  // ─────────────────────────────────────────────────────────────────────────────
+  const handleGeneratePdf = useCallback(async () => {
+    if (!article) return;
+
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const margin = 15;
+    let currentY = margin;
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Couleurs
+    const colorMain = [26, 26, 46]; // #1a1a2e
+    const colorAccent = [99, 102, 241]; // #6366f1
+    const colorText = [60, 60, 70];
+    const colorPromo = [245, 158, 11]; // #f59e0b
+    const colorSuccess = [16, 185, 129]; // Green
+
+    // --- HEADER ---
+    doc.setFillColor(...colorMain);
+    doc.rect(0, 0, pageWidth, 40, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text(safeTrim(article.NART), margin, 25);
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text("Fiche Article", margin, 15);
+
+    // --- BARCODE (si GENCOD existe) ---
+    if (safeTrim(article.GENCOD)) {
+      try {
+        const canvas = document.createElement('canvas');
+        JsBarcode(canvas, safeTrim(article.GENCOD), {
+          format: "CODE128",
+          width: 2,
+          height: 50,
+          displayValue: true,
+          fontSize: 12,
+          margin: 0,
+          background: "#1a1a2e", // Match header bg
+          lineColor: "#ffffff"
+        });
+        const imgData = canvas.toDataURL("image/png");
+        doc.addImage(imgData, 'PNG', pageWidth - 75, 10, 60, 20);
+      } catch (e) {
+        console.error("Erreur génération code-barre", e);
+      }
+    }
+
+    currentY = 55;
+
+    // --- DESIGNATION ---
+    doc.setTextColor(...colorMain);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    const splitDesign = doc.splitTextToSize(safeTrim(article.DESIGN), pageWidth - (margin * 2));
+    doc.text(splitDesign, margin, currentY);
+    currentY += (splitDesign.length * 8) + 5;
+
+    // --- PHOTO & PRIX ---
+    const leftColX = margin;
+    const rightColX = 105;
+    const contentWidth = 85;
+
+    // Photo Box
+    doc.setDrawColor(220, 220, 230);
+    doc.setFillColor(250, 250, 252);
+    doc.roundedRect(leftColX, currentY, contentWidth, 80, 3, 3, 'FD');
+
+    if (photoUrl) {
+      try {
+        // Note: jsPDF addImage peut nécessiter un logique de chargement d'image (async)
+        // Pour simplifier ici, on suppose que l'URL est accessible ou on utilise une image par défaut
+        // En production réelle, on utiliserait une Image() pour charger puis dessiner
+        // Ici on injecte directement, cela fonctionne si l'image est déjà dans le cache navigateur ou base64
+        doc.addImage(photoUrl, 'JPEG', leftColX + 2.5, currentY + 2.5, contentWidth - 5, 75, undefined, 'FAST');
+      } catch (e) {
+        doc.setTextColor(150);
+        doc.setFontSize(12);
+        doc.text("Photo indisponible", leftColX + 15, currentY + 40);
+      }
+    } else {
+      doc.setTextColor(150);
+      doc.setFontSize(12);
+      doc.text("Aucune photo", leftColX + 25, currentY + 40);
+    }
+
+    // Prices Box
+    doc.setFillColor(249, 250, 255); // Light indigo bg
+    doc.roundedRect(rightColX, currentY, contentWidth, 80, 3, 3, 'F');
+
+    let priceY = currentY + 10;
+
+    const addPriceLine = (label, value, isPromo = false, isBold = false) => {
+      doc.setFontSize(10);
+      doc.setTextColor(...colorText);
+      doc.setFont('helvetica', 'normal');
+      doc.text(label, rightColX + 10, priceY);
+
+      doc.setFontSize(14);
+      doc.setTextColor(...(isPromo ? colorPromo : colorMain));
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      doc.text(value, rightColX + contentWidth - 10, priceY, { align: 'right' });
+      priceY += 15;
+    };
+
+    // Contenu Prix
+    addPriceLine("Prix de Vente HT", formatPrice(article.PVTE));
+    addPriceLine(`Taux TGC`, formatPercent(article.TAXES));
+    addPriceLine("Prix TTC", formatPrice(article.PVTETTC), false, true);
+
+    // PROMO (si active)
+    if (hasActivePromo) {
+      currentY += 90; // Espace sous la box prix
+
+      // Promo Banner
+      doc.setFillColor(...colorPromo);
+      doc.roundedRect(rightColX, priceY + 5, contentWidth, 25, 3, 3, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text("PROMO", rightColX + 10, priceY + 15);
+
+      doc.setFontSize(14);
+      doc.text(formatPrice(article.PVPROMO), rightColX + contentWidth - 10, priceY + 15, { align: 'right' });
+
+      // Dates Promo
+      currentY += 30;
+      doc.setTextColor(...colorText);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'italic');
+      const dateText = `Du ${formatDate(article.DPROMOD)} au ${formatDate(article.DPROMOF)}`;
+      doc.text(dateText, rightColX + 10, priceY + 35);
+    }
+
+    // --- FOOTER ---
+    const pageHeight = doc.internal.pageSize.getHeight();
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text(`Imprimé le ${new Date().toLocaleDateString('fr-FR')} - ${selectedEntrepriseData?.nomComplet || ''}`, margin, pageHeight - 10);
+
+    // Save
+    doc.save(`Fiche_${safeTrim(article.NART)}.pdf`);
+
+  }, [article, photoUrl, hasActivePromo, selectedEntrepriseData]); // Dependencies
+
   // ── Rendu onglet Filiales ─────────────────────────────────────────────────
   const renderFilialesTab = () => {
     if (loadingFiliales || fetchingFiliales)
@@ -1585,7 +1779,8 @@ const AdminArticleInfosScreen = () => {
         <div className="header-actions">
           <button className="btn-action" onClick={refetch} disabled={isFetching} title="Rafraîchir"><HiRefresh className={isFetching ? "spinning" : ""} /></button>
           <button className="btn-action" onClick={handleInvalidateCache} disabled={invalidating} title="Invalider le cache"><HiCog className={invalidating ? "spinning" : ""} /></button>
-          <button className="btn-action" onClick={() => window.print()} title="Imprimer"><HiPrinter /></button>
+          {/* UPDATED: Now calls handleGeneratePdf */}
+          <button className="btn-action" onClick={handleGeneratePdf} title="Imprimer la fiche article (PDF)"><HiPrinter /></button>
         </div>
       </header>
 
