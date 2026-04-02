@@ -1,8 +1,9 @@
-
 // // export default AdminArticleInfosScreen;
-
-// import React, { useState, useEffect, useMemo, useCallback } from "react";
+// // import default React and hooks
+// import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 // import { useParams, useNavigate, Link } from "react-router-dom";
+
+// // Icons
 // import {
 //   HiArrowLeft,
 //   HiChevronLeft,
@@ -41,7 +42,12 @@
 //   HiFire,
 //   HiDownload,
 //   HiEye,
+//   HiPlus,
+//   HiTrash,
+//   HiX,
 // } from "react-icons/hi";
+
+// // APIs
 // import { useGetEntreprisesQuery } from "../../slices/entrepriseApiSlice";
 // import {
 //   useGetArticleByNartQuery,
@@ -50,23 +56,40 @@
 //   getPhotoUrl,
 // } from "../../slices/articleApiSlice";
 // import { useGetArticleFilialeDataQuery } from "../../slices/fillialeApiSlice";
+
+// // PDF Generation
+// import jsPDF from "jspdf";
+// import JsBarcode from "jsbarcode";
+
+// // CSS
 // import "./AdminArticleInfosScreen.css";
 
 // // ─────────────────────────────────────────────────────────────────────────────
 // // Helper : construire l'URL du PDF à partir du trigramme et du NART
-// // Convention : même dossier que les photos, extension .pdf
 // // ─────────────────────────────────────────────────────────────────────────────
 // const getPdfUrl = (trigramme, nart) => {
 //   if (!trigramme || !nart) return null;
 //   const cleanNart = String(nart).trim();
-//   // Adapte ce chemin selon ta convention de nommage réelle
 //   return `/photos/${trigramme}/${cleanNart}.pdf`;
 // };
 
 // // ─────────────────────────────────────────────────────────────────────────────
-// // Sous-composant : MediaCard
-// // Gère l'affichage de la photo et/ou du PDF de fiche technique.
-// // Le statut photo + PDF est TOUJOURS affiché, même pendant la vérification.
+// // Couleurs de la charte PDF
+// // ─────────────────────────────────────────────────────────────────────────────
+// const PDF_COLORS = {
+//   BLACK: [26, 26, 26],
+//   YELLOW: [255, 200, 0],
+//   YELLOW_LIGHT: [255, 230, 120],
+//   WHITE: [255, 255, 255],
+//   GRAY_DARK: [80, 80, 80],
+//   GRAY: [120, 120, 120],
+//   GRAY_LIGHT: [200, 200, 200],
+//   GRAY_BG: [245, 245, 245],
+//   PROMO_RED: [220, 38, 38],
+// };
+
+// // ─────────────────────────────────────────────────────────────────────────────
+// // Sous-composant : MediaCard (inchangé)
 // // ─────────────────────────────────────────────────────────────────────────────
 // const MediaCard = ({
 //   photoUrl,
@@ -76,23 +99,16 @@
 //   hasActivePromo,
 //   promoDiscount,
 // }) => {
-//   // "loading" | "ok" | "error"
 //   const [photoStatus, setPhotoStatus] = useState(hasPhotosConfigured ? "loading" : "error");
-//   // "checking" | "available" | "unavailable"
 //   const [pdfStatus, setPdfStatus] = useState("checking");
 //   const [pdfModalOpen, setPdfModalOpen] = useState(false);
 
-//   // Reset photo status quand l'URL change
 //   useEffect(() => {
 //     setPhotoStatus(hasPhotosConfigured && photoUrl ? "loading" : "error");
 //   }, [photoUrl, hasPhotosConfigured]);
 
-//   // Vérifier l'existence du PDF via HEAD request dès que l'URL est connue
 //   useEffect(() => {
-//     if (!pdfUrl) {
-//       setPdfStatus("unavailable");
-//       return;
-//     }
+//     if (!pdfUrl) { setPdfStatus("unavailable"); return; }
 //     let cancelled = false;
 //     setPdfStatus("checking");
 //     fetch(pdfUrl, { method: "HEAD" })
@@ -101,126 +117,56 @@
 //     return () => { cancelled = true; };
 //   }, [pdfUrl]);
 
-//   const photoOk  = hasPhotosConfigured && photoStatus === "ok";
-//   const pdfOk    = pdfStatus === "available";
+//   const photoOk = hasPhotosConfigured && photoStatus === "ok";
+//   const pdfOk = pdfStatus === "available";
 //   const checking = pdfStatus === "checking";
 
 //   return (
 //     <>
 //       <div className="photo-card">
-
-//         {/* ── Zone image ─────────────────────────────────────────────────── */}
 //         {hasPhotosConfigured && photoStatus !== "error" ? (
 //           <div className={`photo-wrapper ${photoStatus === "ok" ? "loaded" : ""}`}>
-//             <img
-//               src={photoUrl}
-//               alt={articleDesign}
-//               onError={() => setPhotoStatus("error")}
-//               onLoad={() => setPhotoStatus("ok")}
-//             />
-//             {photoStatus === "loading" && (
-//               <div className="photo-loading">
-//                 <div className="loading-spinner small" />
-//               </div>
-//             )}
-//             {hasActivePromo && (
-//               <div className="photo-badge promo">-{promoDiscount}%</div>
-//             )}
+//             <img src={photoUrl} alt={articleDesign} onError={() => setPhotoStatus("error")} onLoad={() => setPhotoStatus("ok")} />
+//             {photoStatus === "loading" && (<div className="photo-loading"><div className="loading-spinner small" /></div>)}
+//             {hasActivePromo && (<div className="photo-badge promo">-{promoDiscount}%</div>)}
 //           </div>
 //         ) : (
 //           <div className={`no-photo ${pdfOk ? "no-photo--has-pdf" : ""}`}>
-//             <HiPhotograph />
-//             <span>Photo indisponible</span>
+//             <HiPhotograph /><span>Photo indisponible</span>
 //           </div>
 //         )}
-
-//         {/* ── Bandeau statut médias — TOUJOURS VISIBLE ───────────────────── */}
 //         <div className="media-status-bar">
-
-//           {/* — Bloc Photo — */}
 //           <div className={`media-status-pill ${photoOk ? "pill--ok" : "pill--ko"}`}>
 //             <HiPhotograph className="pill-icon" />
-//             <span className="pill-label">
-//               {photoStatus === "loading" ? "Photo…" : photoOk ? "Photo disponible" : "Photo indisponible"}
-//             </span>
-//             {photoStatus === "loading"
-//               ? <div className="pill-spinner" />
-//               : photoOk
-//                 ? <HiCheckCircle className="pill-check" />
-//                 : <HiXCircle className="pill-cross" />
-//             }
+//             <span className="pill-label">{photoStatus === "loading" ? "Photo…" : photoOk ? "Photo disponible" : "Photo indisponible"}</span>
+//             {photoStatus === "loading" ? <div className="pill-spinner" /> : photoOk ? <HiCheckCircle className="pill-check" /> : <HiXCircle className="pill-cross" />}
 //           </div>
-
-//           {/* — Bloc PDF — */}
 //           <div className={`media-status-pill ${checking ? "pill--checking" : pdfOk ? "pill--ok" : "pill--ko"}`}>
 //             <HiDocumentText className="pill-icon" />
-//             <span className="pill-label">
-//               {checking ? "Fiche technique…" : pdfOk ? "Fiche technique disponible" : "Fiche technique indisponible"}
-//             </span>
-//             {checking
-//               ? <div className="pill-spinner" />
-//               : pdfOk
-//                 ? <HiCheckCircle className="pill-check" />
-//                 : <HiXCircle className="pill-cross" />
-//             }
+//             <span className="pill-label">{checking ? "Fiche technique…" : pdfOk ? "Fiche technique disponible" : "Fiche technique indisponible"}</span>
+//             {checking ? <div className="pill-spinner" /> : pdfOk ? <HiCheckCircle className="pill-check" /> : <HiXCircle className="pill-cross" />}
 //           </div>
 //         </div>
-
-//         {/* ── Boutons PDF — visibles uniquement si PDF trouvé ───────────── */}
 //         {pdfOk && (
 //           <div className="pdf-actions">
-//             <button
-//               className="btn-pdf btn-pdf--view"
-//               onClick={() => setPdfModalOpen(true)}
-//               title="Voir la fiche technique"
-//             >
-//               <HiEye />
-//               <span>Voir la fiche</span>
-//             </button>
-//             <a
-//               className="btn-pdf btn-pdf--download"
-//               href={pdfUrl}
-//               download
-//               target="_blank"
-//               rel="noopener noreferrer"
-//               title="Télécharger la fiche technique"
-//             >
-//               <HiDownload />
-//               <span>Télécharger</span>
-//             </a>
+//             <button className="btn-pdf btn-pdf--view" onClick={() => setPdfModalOpen(true)} title="Voir la fiche technique"><HiEye /><span>Voir la fiche</span></button>
+//             <a className="btn-pdf btn-pdf--download" href={pdfUrl} download target="_blank" rel="noopener noreferrer" title="Télécharger la fiche technique"><HiDownload /><span>Télécharger</span></a>
 //           </div>
 //         )}
-
 //       </div>
-
-//       {/* ── Modale PDF (iframe) ───────────────────────────────────────────── */}
 //       {pdfModalOpen && (
-//         <div
-//           className="pdf-modal-overlay"
-//           onClick={(e) => { if (e.target === e.currentTarget) setPdfModalOpen(false); }}
-//         >
+//         <div className="pdf-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPdfModalOpen(false); }}>
 //           <div className="pdf-modal">
 //             <div className="pdf-modal-header">
 //               <h3><HiDocumentText /> Fiche technique — {articleDesign}</h3>
 //               <div className="pdf-modal-actions">
-//                 <a href={pdfUrl} download className="btn-pdf btn-pdf--download small" title="Télécharger">
-//                   <HiDownload /><span>Télécharger</span>
-//                 </a>
-//                 <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="btn-pdf btn-pdf--view small" title="Ouvrir dans un nouvel onglet">
-//                   <HiExternalLink /><span>Nouvel onglet</span>
-//                 </a>
-//                 <button className="pdf-modal-close" onClick={() => setPdfModalOpen(false)} title="Fermer">
-//                   <HiXCircle />
-//                 </button>
+//                 <a href={pdfUrl} download className="btn-pdf btn-pdf--download small" title="Télécharger"><HiDownload /><span>Télécharger</span></a>
+//                 <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="btn-pdf btn-pdf--view small" title="Ouvrir dans un nouvel onglet"><HiExternalLink /><span>Nouvel onglet</span></a>
+//                 <button className="pdf-modal-close" onClick={() => setPdfModalOpen(false)} title="Fermer"><HiXCircle /></button>
 //               </div>
 //             </div>
 //             <div className="pdf-modal-body">
-//               <iframe
-//                 src={`${pdfUrl}#toolbar=1&navpanes=0`}
-//                 title="Fiche technique"
-//                 width="100%"
-//                 height="100%"
-//               />
+//               <iframe src={`${pdfUrl}#toolbar=1&navpanes=0`} title="Fiche technique" width="100%" height="100%" />
 //             </div>
 //           </div>
 //         </div>
@@ -230,6 +176,317 @@
 // };
 
 // // ─────────────────────────────────────────────────────────────────────────────
+// // Sous-composant : PrintModal
+// // Modale pré-génération PDF avec sélection template, description,
+// // caractéristiques dynamiques et lien web optionnel (QR code)
+// // ─────────────────────────────────────────────────────────────────────────────
+// const PrintModal = ({ isOpen, onClose, onGenerate, articleDesign, nart }) => {
+//   const [template, setTemplate] = useState("complete"); // "complete" | "vitrine" | "etiquette"
+//   const [description, setDescription] = useState("");
+//   const [characteristics, setCharacteristics] = useState([]);
+//   const [webUrl, setWebUrl] = useState("");
+//   const [generating, setGenerating] = useState(false);
+
+//   const handleAddCharacteristic = () => {
+//     setCharacteristics((prev) => [...prev, { label: "", value: "", id: Date.now() }]);
+//   };
+
+//   const handleRemoveCharacteristic = (id) => {
+//     setCharacteristics((prev) => prev.filter((c) => c.id !== id));
+//   };
+
+//   const handleCharChange = (id, field, val) => {
+//     setCharacteristics((prev) =>
+//       prev.map((c) => (c.id === id ? { ...c, [field]: val } : c))
+//     );
+//   };
+
+//   const handleGenerate = async () => {
+//     setGenerating(true);
+//     try {
+//       await onGenerate({
+//         template,
+//         description: description.trim(),
+//         characteristics: characteristics.filter((c) => c.label.trim() || c.value.trim()),
+//         webUrl: webUrl.trim(),
+//       });
+//     } finally {
+//       setGenerating(false);
+//     }
+//   };
+
+//   const handleClose = () => {
+//     if (!generating) {
+//       setDescription("");
+//       setCharacteristics([]);
+//       setWebUrl("");
+//       setTemplate("complete");
+//       onClose();
+//     }
+//   };
+
+//   if (!isOpen) return null;
+
+//   const templates = [
+//     {
+//       id: "complete",
+//       label: "Fiche complète",
+//       desc: "Toutes les informations : prix d'achat, marges, stocks, détails complets",
+//       icon: "📋",
+//     },
+//     {
+//       id: "vitrine",
+//       label: "Fiche vitrine",
+//       desc: "Version client : prix TTC, promo, photo, sans marges ni prix d'achat",
+//       icon: "🏪",
+//     },
+//     {
+//       id: "etiquette",
+//       label: "Étiquette prix",
+//       desc: "Format compact A6 : NART, désignation, code-barres, prix TTC & promo",
+//       icon: "🏷️",
+//     },
+//   ];
+
+//   return (
+//     <div className="print-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}>
+//       <div className="print-modal">
+//         {/* Header */}
+//         <div className="print-modal-header">
+//           <div className="print-modal-title">
+//             <HiPrinter />
+//             <div>
+//               <h3>Générer une fiche PDF</h3>
+//               <span className="print-modal-subtitle">{nart} — {articleDesign}</span>
+//             </div>
+//           </div>
+//           <button className="print-modal-close" onClick={handleClose} disabled={generating}>
+//             <HiX />
+//           </button>
+//         </div>
+
+//         {/* Body */}
+//         <div className="print-modal-body">
+
+//           {/* Template selector */}
+//           <div className="print-section">
+//             <label className="print-section-label">Type de fiche</label>
+//             <div className="template-selector">
+//               {templates.map((t) => (
+//                 <button
+//                   key={t.id}
+//                   className={`template-option ${template === t.id ? "active" : ""}`}
+//                   onClick={() => setTemplate(t.id)}
+//                 >
+//                   <span className="template-icon">{t.icon}</span>
+//                   <span className="template-label">{t.label}</span>
+//                   <span className="template-desc">{t.desc}</span>
+//                 </button>
+//               ))}
+//             </div>
+//           </div>
+
+//           {/* Description (pas pour étiquette) */}
+//           {template !== "etiquette" && (
+//             <div className="print-section">
+//               <label className="print-section-label">Description (optionnel)</label>
+//               <textarea
+//                 className="print-textarea"
+//                 value={description}
+//                 onChange={(e) => setDescription(e.target.value)}
+//                 placeholder="Ajoutez une description libre pour cet article..."
+//                 rows={3}
+//               />
+//             </div>
+//           )}
+
+//           {/* Caractéristiques dynamiques (pas pour étiquette) */}
+//           {template !== "etiquette" && (
+//             <div className="print-section">
+//               <label className="print-section-label">Caractéristiques supplémentaires (optionnel)</label>
+//               <div className="chars-list">
+//                 {characteristics.map((c) => (
+//                   <div key={c.id} className="char-row">
+//                     <input
+//                       type="text"
+//                       className="char-input label"
+//                       placeholder="Label (ex: Poids)"
+//                       value={c.label}
+//                       onChange={(e) => handleCharChange(c.id, "label", e.target.value)}
+//                     />
+//                     <input
+//                       type="text"
+//                       className="char-input value"
+//                       placeholder="Valeur (ex: 2.5 kg)"
+//                       value={c.value}
+//                       onChange={(e) => handleCharChange(c.id, "value", e.target.value)}
+//                     />
+//                     <button
+//                       className="char-remove"
+//                       onClick={() => handleRemoveCharacteristic(c.id)}
+//                       title="Supprimer"
+//                     >
+//                       <HiTrash />
+//                     </button>
+//                   </div>
+//                 ))}
+//                 <button className="char-add" onClick={handleAddCharacteristic}>
+//                   <HiPlus /> Ajouter une caractéristique
+//                 </button>
+//               </div>
+//             </div>
+//           )}
+
+//           {/* URL web optionnel (QR code) */}
+//           <div className="print-section">
+//             <label className="print-section-label">
+//               Lien page web (optionnel)
+//               <span className="print-section-hint">Un QR code sera ajouté sur la fiche</span>
+//             </label>
+//             <input
+//               type="url"
+//               className="print-input"
+//               value={webUrl}
+//               onChange={(e) => setWebUrl(e.target.value)}
+//               placeholder="https://www.exemple.com/article/..."
+//             />
+//           </div>
+//         </div>
+
+//         {/* Footer */}
+//         <div className="print-modal-footer">
+//           <button className="print-btn cancel" onClick={handleClose} disabled={generating}>
+//             Annuler
+//           </button>
+//           <button className="print-btn generate" onClick={handleGenerate} disabled={generating}>
+//             {generating ? (
+//               <><div className="btn-spinner" /> Génération...</>
+//             ) : (
+//               <><HiPrinter /> Générer le PDF</>
+//             )}
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// // ─────────────────────────────────────────────────────────────────────────────
+// // Fonctions utilitaires PDF
+// // ─────────────────────────────────────────────────────────────────────────────
+
+// /** Charge une image (URL) en base64 data URL. Retourne null si échec. */
+// const loadImageAsBase64 = (url) => {
+//   return new Promise((resolve) => {
+//     const img = new Image();
+//     img.crossOrigin = "anonymous";
+//     img.onload = () => {
+//       try {
+//         const canvas = document.createElement("canvas");
+//         canvas.width = img.naturalWidth;
+//         canvas.height = img.naturalHeight;
+//         const ctx = canvas.getContext("2d");
+//         ctx.drawImage(img, 0, 0);
+//         resolve(canvas.toDataURL("image/jpeg", 0.85));
+//       } catch {
+//         resolve(null);
+//       }
+//     };
+//     img.onerror = () => resolve(null);
+//     img.src = url;
+//   });
+// };
+
+// /** Génère un code-barres en base64 data URL. */
+// const generateBarcodeBase64 = (value, options = {}) => {
+//   try {
+//     const canvas = document.createElement("canvas");
+//     JsBarcode(canvas, value, {
+//       format: "CODE128",
+//       width: 1,
+//       height: 22,
+//       displayValue: true,
+//       fontSize: 9,
+//       margin: 2,
+//       background: "#FFFFFF",
+//       lineColor: "#000000",
+//       ...options,
+//     });
+//     return canvas.toDataURL("image/png");
+//   } catch {
+//     return null;
+//   }
+// };
+
+// /** Génère un QR code en base64 data URL via import dynamique. Retourne null si lib absente. */
+// const generateQRCodeBase64 = async (url) => {
+//   try {
+//     const QRCode = await import("qrcode");
+//     const toDataURL = QRCode.toDataURL || QRCode.default?.toDataURL;
+//     if (!toDataURL) return null;
+//     return await toDataURL(url, {
+//       width: 200,
+//       margin: 1,
+//       color: { dark: "#1a1a1a", light: "#ffffff" },
+//     });
+//   } catch {
+//     console.warn("QR code generation failed. Install qrcode: npm install qrcode");
+//     return null;
+//   }
+// };
+
+// // ─────────────────────────────────────────────────────────────────────────────
+// // Classe helper pour dessiner le PDF avec gestion auto du saut de page
+// // ─────────────────────────────────────────────────────────────────────────────
+// class PdfBuilder {
+//   constructor(doc, { margin = 15, footerHeight = 18, headerRepeatHeight = 0 } = {}) {
+//     this.doc = doc;
+//     this.margin = margin;
+//     this.footerHeight = footerHeight;
+//     this.headerRepeatHeight = headerRepeatHeight;
+//     this.pageWidth = doc.internal.pageSize.getWidth();
+//     this.pageHeight = doc.internal.pageSize.getHeight();
+//     this.contentWidth = this.pageWidth - margin * 2;
+//     this.y = margin;
+//     this.pageNumber = 1;
+//     this._footerFn = null;
+//     this._headerRepeatFn = null;
+//   }
+
+//   get usableBottom() {
+//     return this.pageHeight - this.footerHeight;
+//   }
+
+//   setFooter(fn) { this._footerFn = fn; }
+//   setHeaderRepeat(fn) { this._headerRepeatFn = fn; }
+
+//   /** Vérifie s'il y a assez de place, sinon ajoute une page */
+//   ensureSpace(neededMm) {
+//     if (this.y + neededMm > this.usableBottom) {
+//       this.addPage();
+//     }
+//   }
+
+//   addPage() {
+//     // Dessiner le footer de la page courante
+//     if (this._footerFn) this._footerFn(this.doc, this.pageNumber);
+//     this.doc.addPage();
+//     this.pageNumber++;
+//     this.y = this.margin;
+//     // Dessiner le header répété
+//     if (this._headerRepeatFn) {
+//       this._headerRepeatFn(this.doc);
+//       this.y = this.margin + this.headerRepeatHeight;
+//     }
+//   }
+
+//   /** Dessine le footer sur la dernière page */
+//   finalize() {
+//     if (this._footerFn) this._footerFn(this.doc, this.pageNumber);
+//   }
+// }
+
+// // ─────────────────────────────────────────────────────────────────────────────
 // // Composant principal
 // // ─────────────────────────────────────────────────────────────────────────────
 // const AdminArticleInfosScreen = () => {
@@ -237,11 +494,10 @@
 //   const navigate = useNavigate();
 
 //   // États
-//   const [selectedEntreprise, setSelectedEntreprise] = useState(
-//     nomDossierDBF || "",
-//   );
+//   const [selectedEntreprise, setSelectedEntreprise] = useState(nomDossierDBF || "");
 //   const [selectedEntrepriseData, setSelectedEntrepriseData] = useState(null);
 //   const [activeTab, setActiveTab] = useState("general");
+//   const [showPrintModal, setShowPrintModal] = useState(false);
 
 //   // State pour les taux de change
 //   const [exchangeRates, setExchangeRates] = useState(null);
@@ -270,14 +526,11 @@
 //     } catch (error) {
 //       setExchangeRatesError(error.message);
 //       setExchangeRates({
-//         base: "EUR",
-//         date: new Date().toISOString().split("T")[0],
+//         base: "EUR", date: new Date().toISOString().split("T")[0],
 //         rates: { EUR: 1, USD: 1.08, XPF: XPF_EUR_RATE, AUD: 1.65, NZD: 1.78, JPY: 162, GBP: 0.85, CHF: 0.95, CNY: 7.8, CAD: 1.47 },
 //         isFallback: true,
 //       });
-//     } finally {
-//       setExchangeRatesLoading(false);
-//     }
+//     } finally { setExchangeRatesLoading(false); }
 //   }, []);
 
 //   useEffect(() => { fetchExchangeRates(); }, [fetchExchangeRates]);
@@ -293,21 +546,16 @@
 //     if (!rateFromEUR) return { amountXPF: null, rate: null, fromCurrency: isoCurrency, error: `Devise ${isoCurrency} non supportée` };
 //     return {
 //       amountXPF: Math.round((amount / rateFromEUR) * XPF_EUR_RATE),
-//       rate: XPF_EUR_RATE / rateFromEUR,
-//       fromCurrency: isoCurrency,
-//       error: null,
+//       rate: XPF_EUR_RATE / rateFromEUR, fromCurrency: isoCurrency, error: null,
 //     };
 //   }, [exchangeRates]);
 
 //   // Queries
 //   const { data: entreprises, isLoading: loadingEntreprises } = useGetEntreprisesQuery();
-
 //   const { data: articleData, isLoading: loadingArticle, error: articleError, refetch, isFetching } =
 //     useGetArticleByNartQuery({ nomDossierDBF: selectedEntreprise, nart }, { skip: !selectedEntreprise || !nart });
-
 //   const { data: adjacentData, isLoading: loadingAdjacent } =
 //     useGetAdjacentArticlesQuery({ nomDossierDBF: selectedEntreprise, nart }, { skip: !selectedEntreprise || !nart });
-
 //   const [invalidateCache, { isLoading: invalidating }] = useInvalidateArticleCacheMutation();
 
 //   const article = articleData?.article;
@@ -343,7 +591,6 @@
 //   const handleNavigatePrevious = () => {
 //     if (previousArticle) navigate(`/admin/articles/${selectedEntreprise}/${previousArticle.NART.trim()}`);
 //   };
-
 //   const handleNavigateNext = () => {
 //     if (nextArticle) navigate(`/admin/articles/${selectedEntreprise}/${nextArticle.NART.trim()}`);
 //   };
@@ -481,16 +728,507 @@
 //   const hasActivePromo = article ? isPromoActive(article) : false;
 //   const hasPhotosConfigured = !!selectedEntrepriseData?.cheminPhotos;
 
-//   // ── URLs médias ──────────────────────────────────────────────────────────
-//   const photoUrl = hasPhotosConfigured && article
-//     ? getPhotoUrl(selectedEntrepriseData?.trigramme, article.NART)
-//     : null;
-
-//   const pdfUrl = hasPhotosConfigured && article
-//     ? getPdfUrl(selectedEntrepriseData?.trigramme, article.NART)
-//     : null;
-
+//   const photoUrl = hasPhotosConfigured && article ? getPhotoUrl(selectedEntrepriseData?.trigramme, article.NART) : null;
+//   const pdfUrl = hasPhotosConfigured && article ? getPdfUrl(selectedEntrepriseData?.trigramme, article.NART) : null;
 //   const mappingEntrepots = selectedEntrepriseData?.mappingEntrepots || { S1: "Magasin", S2: "S2", S3: "S3", S4: "S4", S5: "S5" };
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // PDF GENERATION — 3 templates
+//   // ─────────────────────────────────────────────────────────────────────────
+//   const handleGeneratePdf = useCallback(async (options) => {
+//     if (!article) return;
+//     const { template, description, characteristics, webUrl } = options;
+
+//     // ── Préparer les assets ──
+//     const gencod = safeTrim(article.GENCOD);
+//     const barcodeImg = gencod ? generateBarcodeBase64(gencod, {
+//       width: template === "etiquette" ? 1.5 : 1,
+//       height: template === "etiquette" ? 30 : 22,
+//       fontSize: template === "etiquette" ? 11 : 9,
+//     }) : null;
+
+//     const photoImg = photoUrl ? await loadImageAsBase64(photoUrl) : null;
+//     const qrImg = webUrl ? await generateQRCodeBase64(webUrl) : null;
+
+//     const entrepriseNom = selectedEntrepriseData?.nomComplet || "";
+//     const dateStr = new Date().toLocaleDateString("fr-FR");
+//     const promoActive = hasActivePromo;
+//     const discount = calculateDiscount(article.PVTETTC, article.PVPROMO);
+
+//     // ================================================================
+//     //  ÉTIQUETTE PRIX — Format A6 paysage
+//     // ================================================================
+//     if (template === "etiquette") {
+//       const doc = new jsPDF({ unit: "mm", format: [148, 105], orientation: "landscape" });
+//       const m = 8;
+//       const pw = 148;
+//       const ph = 105;
+
+//       // Fond
+//       doc.setFillColor(...PDF_COLORS.BLACK);
+//       doc.rect(0, 0, pw, ph, "F");
+
+//       // Bandeau jaune en haut
+//       doc.setFillColor(...PDF_COLORS.YELLOW);
+//       doc.rect(0, 0, pw, 5, "F");
+
+//       // NART
+//       doc.setTextColor(...PDF_COLORS.YELLOW);
+//       doc.setFontSize(11);
+//       doc.setFont("helvetica", "bold");
+//       doc.text(safeTrim(article.NART), m, 16);
+
+//       // Désignation
+//       doc.setTextColor(...PDF_COLORS.WHITE);
+//       doc.setFontSize(14);
+//       doc.setFont("helvetica", "bold");
+//       const designLines = doc.splitTextToSize(safeTrim(article.DESIGN), pw - m * 2 - 55);
+//       doc.text(designLines, m, 26);
+
+//       // Code-barres
+//       if (barcodeImg) {
+//         // Fond blanc pour le code-barres
+//         doc.setFillColor(...PDF_COLORS.WHITE);
+//         doc.roundedRect(pw - 55, 8, 48, 22, 2, 2, "F");
+//         doc.addImage(barcodeImg, "PNG", pw - 53, 9, 44, 20);
+//       }
+
+//       // Ligne de séparation jaune
+//       const sepY = 40 + (designLines.length - 1) * 5;
+//       doc.setDrawColor(...PDF_COLORS.YELLOW);
+//       doc.setLineWidth(0.5);
+//       doc.line(m, sepY, pw - m, sepY);
+
+//       // Prix
+//       let priceY = sepY + 15;
+
+//       if (promoActive) {
+//         // Ancien prix barré
+//         doc.setTextColor(...PDF_COLORS.GRAY);
+//         doc.setFontSize(16);
+//         doc.setFont("helvetica", "normal");
+//         const oldPriceText = formatPrice(article.PVTETTC);
+//         doc.text(oldPriceText, pw / 2, priceY, { align: "center" });
+//         // Barre
+//         const oldPriceWidth = doc.getTextWidth(oldPriceText);
+//         doc.setDrawColor(...PDF_COLORS.PROMO_RED);
+//         doc.setLineWidth(0.8);
+//         doc.line(pw / 2 - oldPriceWidth / 2, priceY - 1, pw / 2 + oldPriceWidth / 2, priceY - 1);
+
+//         priceY += 12;
+
+//         // Bandeau promo
+//         doc.setFillColor(...PDF_COLORS.YELLOW);
+//         doc.roundedRect(m, priceY - 8, pw - m * 2, 20, 3, 3, "F");
+
+//         doc.setTextColor(...PDF_COLORS.BLACK);
+//         doc.setFontSize(12);
+//         doc.setFont("helvetica", "bold");
+//         doc.text(`PROMO -${discount}%`, m + 8, priceY + 3);
+
+//         doc.setFontSize(22);
+//         doc.text(formatPrice(article.PVPROMO), pw - m - 8, priceY + 5, { align: "right" });
+
+//         priceY += 16;
+
+//         // Dates promo
+//         doc.setTextColor(...PDF_COLORS.YELLOW_LIGHT);
+//         doc.setFontSize(8);
+//         doc.setFont("helvetica", "italic");
+//         doc.text(`Du ${formatDate(article.DPROMOD)} au ${formatDate(article.DPROMOF)}`, pw / 2, priceY + 5, { align: "center" });
+//       } else {
+//         // Prix normal gros
+//         doc.setTextColor(...PDF_COLORS.YELLOW);
+//         doc.setFontSize(10);
+//         doc.setFont("helvetica", "normal");
+//         doc.text("PRIX TTC", pw / 2, priceY - 2, { align: "center" });
+
+//         doc.setTextColor(...PDF_COLORS.WHITE);
+//         doc.setFontSize(28);
+//         doc.setFont("helvetica", "bold");
+//         doc.text(formatPrice(article.PVTETTC), pw / 2, priceY + 12, { align: "center" });
+//       }
+
+//       // QR code si fourni
+//       if (qrImg) {
+//         doc.setFillColor(...PDF_COLORS.WHITE);
+//         doc.roundedRect(pw - m - 22, ph - 28, 22, 22, 2, 2, "F");
+//         doc.addImage(qrImg, "PNG", pw - m - 21, ph - 27, 20, 20);
+//       }
+
+//       // Bandeau jaune en bas
+//       doc.setFillColor(...PDF_COLORS.YELLOW);
+//       doc.rect(0, ph - 3, pw, 3, "F");
+
+//       // Footer
+//       doc.setTextColor(...PDF_COLORS.GRAY);
+//       doc.setFontSize(6);
+//       doc.text(`${entrepriseNom} • ${dateStr}`, m, ph - 5);
+
+//       doc.save(`Etiquette_${safeTrim(article.NART)}.pdf`);
+//       return;
+//     }
+
+//     // ================================================================
+//     //  FICHE COMPLÈTE & FICHE VITRINE — Format A4
+//     // ================================================================
+//     const isVitrine = template === "vitrine";
+//     const doc = new jsPDF({ unit: "mm", format: "a4" });
+//     const margin = 15;
+//     const pb = new PdfBuilder(doc, { margin, footerHeight: 18, headerRepeatHeight: 12 });
+
+//     // ── Footer sur chaque page ──
+//     pb.setFooter((d, pageNum) => {
+//       d.setDrawColor(...PDF_COLORS.GRAY_LIGHT);
+//       d.setLineWidth(0.3);
+//       d.line(margin, pb.pageHeight - 14, pb.pageWidth - margin, pb.pageHeight - 14);
+//       d.setFontSize(7);
+//       d.setTextColor(...PDF_COLORS.GRAY);
+//       d.text(`${entrepriseNom} • ${dateStr}`, margin, pb.pageHeight - 9);
+//       d.text(`Page ${pageNum}`, pb.pageWidth - margin, pb.pageHeight - 9, { align: "right" });
+//     });
+
+//     // ── Header répété (petit bandeau noir) ──
+//     pb.setHeaderRepeat((d) => {
+//       d.setFillColor(...PDF_COLORS.BLACK);
+//       d.rect(0, 0, pb.pageWidth, 10, "F");
+//       d.setTextColor(...PDF_COLORS.YELLOW);
+//       d.setFontSize(8);
+//       d.setFont("helvetica", "bold");
+//       d.text(`${safeTrim(article.NART)} — ${safeTrim(article.DESIGN).substring(0, 60)}`, margin, 7);
+//     });
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  PAGE 1 — HEADER PRINCIPAL
+//     // ════════════════════════════════════════════════════════════════
+//     doc.setFillColor(...PDF_COLORS.BLACK);
+//     doc.rect(0, 0, pb.pageWidth, 38, "F");
+
+//     // Bandeau jaune fin en haut
+//     doc.setFillColor(...PDF_COLORS.YELLOW);
+//     doc.rect(0, 0, pb.pageWidth, 2, "F");
+
+//     // Label "Fiche Article"
+//     doc.setTextColor(...PDF_COLORS.YELLOW);
+//     doc.setFontSize(8);
+//     doc.setFont("helvetica", "normal");
+//     doc.text(isVitrine ? "FICHE PRODUIT" : "FICHE ARTICLE", margin, 12);
+
+//     // NART
+//     doc.setFontSize(20);
+//     doc.setFont("helvetica", "bold");
+//     doc.text(safeTrim(article.NART), margin, 23);
+
+//     // Désignation sous le NART
+//     doc.setTextColor(...PDF_COLORS.WHITE);
+//     doc.setFontSize(9);
+//     doc.setFont("helvetica", "normal");
+//     const headerDesign = doc.splitTextToSize(safeTrim(article.DESIGN), pb.pageWidth - margin - 70);
+//     doc.text(headerDesign, margin, 30);
+
+//     // Code-barres en haut à droite
+//     if (barcodeImg) {
+//       doc.setFillColor(...PDF_COLORS.WHITE);
+//       doc.roundedRect(pb.pageWidth - 60, 6, 48, 20, 2, 2, "F");
+//       doc.addImage(barcodeImg, "PNG", pb.pageWidth - 58, 7, 44, 18);
+//     }
+
+//     // GENCOD text sous le code-barres
+//     if (gencod) {
+//       doc.setTextColor(...PDF_COLORS.GRAY);
+//       doc.setFontSize(7);
+//       doc.text(gencod, pb.pageWidth - 36, 32, { align: "center" });
+//     }
+
+//     pb.y = 46;
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  PHOTO + BLOC PRIX
+//     // ════════════════════════════════════════════════════════════════
+//     const photoBoxW = 75;
+//     const photoBoxH = 65;
+//     const priceBoxX = margin + photoBoxW + 8;
+//     const priceBoxW = pb.contentWidth - photoBoxW - 8;
+
+//     // Photo
+//     doc.setDrawColor(...PDF_COLORS.GRAY_LIGHT);
+//     doc.setFillColor(250, 250, 250);
+//     doc.roundedRect(margin, pb.y, photoBoxW, photoBoxH, 2, 2, "FD");
+
+//     if (photoImg) {
+//       try {
+//         doc.addImage(photoImg, "JPEG", margin + 2, pb.y + 2, photoBoxW - 4, photoBoxH - 4);
+//       } catch {
+//         doc.setTextColor(...PDF_COLORS.GRAY);
+//         doc.setFontSize(10);
+//         doc.text("Photo indisponible", margin + 12, pb.y + 35);
+//       }
+//     } else {
+//       doc.setTextColor(...PDF_COLORS.GRAY);
+//       doc.setFontSize(10);
+//       doc.text("Photo indisponible", margin + 12, pb.y + 35);
+//     }
+
+//     // Bloc prix
+//     doc.setFillColor(...PDF_COLORS.GRAY_BG);
+//     doc.roundedRect(priceBoxX, pb.y, priceBoxW, photoBoxH, 2, 2, "F");
+
+//     let priceY = pb.y + 10;
+
+//     const drawPriceLine = (label, value, opts = {}) => {
+//       const { bold = false, accent = false, strikethrough = false } = opts;
+//       doc.setFontSize(9);
+//       doc.setTextColor(...PDF_COLORS.GRAY_DARK);
+//       doc.setFont("helvetica", "normal");
+//       doc.text(label, priceBoxX + 8, priceY);
+
+//       doc.setFontSize(bold ? 15 : 12);
+//       doc.setTextColor(...(accent ? PDF_COLORS.YELLOW : PDF_COLORS.BLACK));
+//       doc.setFont("helvetica", bold ? "bold" : "normal");
+//       doc.text(value, priceBoxX + priceBoxW - 8, priceY, { align: "right" });
+
+//       if (strikethrough) {
+//         const tw = doc.getTextWidth(value);
+//         doc.setDrawColor(...PDF_COLORS.PROMO_RED);
+//         doc.setLineWidth(0.5);
+//         doc.line(priceBoxX + priceBoxW - 8 - tw, priceY - 1.5, priceBoxX + priceBoxW - 8, priceY - 1.5);
+//       }
+
+//       priceY += 12;
+//     };
+
+//     if (!isVitrine) {
+//       drawPriceLine("Prix HT", formatPrice(article.PVTE));
+//       drawPriceLine("TGC", formatPercent(article.TAXES));
+//     }
+//     drawPriceLine("Prix TTC", formatPrice(article.PVTETTC), {
+//       bold: true,
+//       strikethrough: promoActive,
+//     });
+
+//     if (promoActive) {
+//       drawPriceLine(`PROMO -${discount}%`, formatPrice(article.PVPROMO), { bold: true, accent: true });
+//     }
+
+//     // QR code dans le bloc prix (coin bas droit)
+//     if (qrImg) {
+//       const qrSize = 22;
+//       const qrX = priceBoxX + priceBoxW - qrSize - 5;
+//       const qrY2 = pb.y + photoBoxH - qrSize - 3;
+//       doc.addImage(qrImg, "PNG", qrX, qrY2, qrSize, qrSize);
+//       doc.setFontSize(5);
+//       doc.setTextColor(...PDF_COLORS.GRAY);
+//       doc.text("Voir en ligne", qrX + qrSize / 2, qrY2 + qrSize + 3, { align: "center" });
+//     }
+
+//     pb.y += photoBoxH + 8;
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  BANDEAU PROMO (si actif)
+//     // ════════════════════════════════════════════════════════════════
+//     if (promoActive) {
+//       pb.ensureSpace(22);
+//       doc.setFillColor(...PDF_COLORS.YELLOW);
+//       doc.roundedRect(margin, pb.y, pb.contentWidth, 16, 2, 2, "F");
+
+//       doc.setTextColor(...PDF_COLORS.BLACK);
+//       doc.setFontSize(11);
+//       doc.setFont("helvetica", "bold");
+//       doc.text(`PROMOTION  -${discount}%`, margin + 8, pb.y + 7);
+
+//       doc.setFontSize(14);
+//       doc.text(formatPrice(article.PVPROMO), pb.pageWidth - margin - 8, pb.y + 8, { align: "right" });
+
+//       doc.setFontSize(7);
+//       doc.setFont("helvetica", "italic");
+//       doc.setTextColor(...PDF_COLORS.GRAY_DARK);
+//       doc.text(`Du ${formatDate(article.DPROMOD)} au ${formatDate(article.DPROMOF)}`, margin + 8, pb.y + 13);
+
+//       pb.y += 22;
+//     }
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  HELPER — Section titre
+//     // ════════════════════════════════════════════════════════════════
+//     const drawSectionTitle = (title) => {
+//       pb.ensureSpace(14);
+//       doc.setFillColor(...PDF_COLORS.BLACK);
+//       doc.roundedRect(margin, pb.y, pb.contentWidth, 8, 1, 1, "F");
+//       doc.setTextColor(...PDF_COLORS.YELLOW);
+//       doc.setFontSize(9);
+//       doc.setFont("helvetica", "bold");
+//       doc.text(title, margin + 4, pb.y + 5.5);
+//       pb.y += 12;
+//     };
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  HELPER — Ligne info (label / valeur)
+//     // ════════════════════════════════════════════════════════════════
+//     const drawInfoLine = (label, value, opts = {}) => {
+//       const { indent = 0 } = opts;
+//       pb.ensureSpace(6);
+//       doc.setFontSize(8);
+//       doc.setFont("helvetica", "normal");
+//       doc.setTextColor(...PDF_COLORS.GRAY_DARK);
+//       doc.text(label, margin + 4 + indent, pb.y);
+//       doc.setTextColor(...PDF_COLORS.BLACK);
+//       doc.setFont("helvetica", "bold");
+//       doc.text(String(value || "-"), pb.pageWidth - margin - 4, pb.y, { align: "right" });
+//       pb.y += 6;
+//     };
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  INFOS PRODUIT
+//     // ════════════════════════════════════════════════════════════════
+//     drawSectionTitle("INFORMATIONS PRODUIT");
+//     drawInfoLine("Fournisseur", article.FOURN || "-");
+//     drawInfoLine("Réf. fournisseur", safeTrim(article.REFER) || "-");
+//     drawInfoLine("Groupe / Famille", safeTrim(article.GROUPE) || "-");
+//     drawInfoLine("Unité", safeTrim(article.UNITE) || "-");
+//     drawInfoLine("Conditionnement", article.CONDITNM || "-");
+//     if (safeTrim(article.GENCOD)) drawInfoLine("Code barre (GENCOD)", safeTrim(article.GENCOD));
+//     pb.y += 2;
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  STOCKS (fiche complète uniquement)
+//     // ════════════════════════════════════════════════════════════════
+//     if (!isVitrine) {
+//       drawSectionTitle("STOCKS");
+//       drawInfoLine("Stock total", formatStock(calculateStockTotal(article)));
+//       drawInfoLine("En commande", formatStock(getEnCommande(article)));
+//       drawInfoLine("Stock en jours", formatStockEnJours(stockEnJours));
+
+//       const stockKeys = ["S1", "S2", "S3", "S4", "S5"];
+//       stockKeys.forEach((k) => {
+//         const val = parseFloat(article[k]) || 0;
+//         if (val > 0) drawInfoLine(`  ${mappingEntrepots[k]}`, formatStock(val), { indent: 6 });
+//       });
+//       pb.y += 2;
+//     }
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  PRIX DÉTAILLÉS (fiche complète uniquement)
+//     // ════════════════════════════════════════════════════════════════
+//     if (!isVitrine) {
+//       drawSectionTitle("PRIX & MARGES");
+//       drawInfoLine("Prix d'achat (PACHAT)", formatPrice(article.PACHAT));
+//       drawInfoLine("Prix de revient (PREV)", formatPrice(article.PREV));
+//       drawInfoLine("Dernier prix revient", formatPrice(article.DERPREV));
+//       drawInfoLine("Prix HT (PVTE)", formatPrice(article.PVTE));
+//       drawInfoLine("TGC", formatPercent(article.TAXES));
+//       drawInfoLine("Prix TTC", formatPrice(article.PVTETTC));
+//       const marge = calculateMarge(article);
+//       if (marge) drawInfoLine("Marge calculée", `${marge}%`);
+//       if (safeTrim(article.DEVISE)) drawInfoLine("Devise achat", safeTrim(article.DEVISE));
+//       pb.y += 2;
+//     }
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  CARACTÉRISTIQUES PERSONNALISÉES
+//     // ════════════════════════════════════════════════════════════════
+//     if (characteristics && characteristics.length > 0) {
+//       drawSectionTitle("CARACTÉRISTIQUES");
+//       characteristics.forEach((c) => {
+//         drawInfoLine(c.label, c.value);
+//       });
+//       pb.y += 2;
+//     }
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  DESCRIPTION
+//     // ════════════════════════════════════════════════════════════════
+//     if (description) {
+//       drawSectionTitle("DESCRIPTION");
+//       pb.ensureSpace(12);
+//       doc.setFontSize(8);
+//       doc.setFont("helvetica", "normal");
+//       doc.setTextColor(...PDF_COLORS.GRAY_DARK);
+//       const descLines = doc.splitTextToSize(description, pb.contentWidth - 8);
+//       // Écrire ligne par ligne avec gestion du saut
+//       descLines.forEach((line) => {
+//         pb.ensureSpace(5);
+//         doc.text(line, margin + 4, pb.y);
+//         pb.y += 4.5;
+//       });
+//       pb.y += 4;
+//     }
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  EMPLACEMENTS (fiche complète)
+//     // ════════════════════════════════════════════════════════════════
+//     if (!isVitrine) {
+//       const place = safeTrim(article.PLACE);
+//       const gisements = ["GISM1","GISM2","GISM3","GISM4","GISM5"].map((g) => safeTrim(article[g])).filter(Boolean);
+//       if (place || gisements.length > 0) {
+//         drawSectionTitle("EMPLACEMENTS");
+//         if (place) drawInfoLine("Place principale", place);
+//         gisements.forEach((g, i) => drawInfoLine(`Gisement ${i + 1}`, g));
+//         pb.y += 2;
+//       }
+//     }
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  VENTES 12 MOIS (fiche complète)
+//     // ════════════════════════════════════════════════════════════════
+//     if (!isVitrine && totalSales > 0) {
+//       drawSectionTitle("VENTES (12 DERNIERS MOIS)");
+//       drawInfoLine("Total ventes", formatStock(totalSales));
+//       drawInfoLine("Moyenne / mois", averageMonthlySales.toFixed(1));
+//       if (totalRuptures > 0) drawInfoLine("Total ruptures", formatStock(totalRuptures));
+//       pb.y += 2;
+//     }
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  OBSERVATIONS
+//     // ════════════════════════════════════════════════════════════════
+//     const observ = safeTrim(article.OBSERV);
+//     if (observ) {
+//       drawSectionTitle("OBSERVATIONS");
+//       pb.ensureSpace(10);
+//       doc.setFontSize(8);
+//       doc.setFont("helvetica", "italic");
+//       doc.setTextColor(...PDF_COLORS.GRAY_DARK);
+//       const obsLines = doc.splitTextToSize(observ, pb.contentWidth - 8);
+//       obsLines.forEach((line) => {
+//         pb.ensureSpace(5);
+//         doc.text(line, margin + 4, pb.y);
+//         pb.y += 4.5;
+//       });
+//       pb.y += 4;
+//     }
+
+//     // ════════════════════════════════════════════════════════════════
+//     //  QR CODE GRAND (si webUrl et pas déjà dans le bloc prix)
+//     // ════════════════════════════════════════════════════════════════
+//     if (qrImg && webUrl) {
+//       pb.ensureSpace(35);
+//       doc.setFillColor(...PDF_COLORS.GRAY_BG);
+//       doc.roundedRect(margin, pb.y, pb.contentWidth, 30, 2, 2, "F");
+
+//       doc.addImage(qrImg, "PNG", margin + 4, pb.y + 3, 24, 24);
+
+//       doc.setTextColor(...PDF_COLORS.BLACK);
+//       doc.setFontSize(9);
+//       doc.setFont("helvetica", "bold");
+//       doc.text("Voir cet article en ligne", margin + 34, pb.y + 12);
+
+//       doc.setTextColor(...PDF_COLORS.GRAY);
+//       doc.setFontSize(7);
+//       doc.setFont("helvetica", "normal");
+//       const urlTruncated = webUrl.length > 80 ? webUrl.substring(0, 77) + "..." : webUrl;
+//       doc.text(urlTruncated, margin + 34, pb.y + 19);
+
+//       pb.y += 34;
+//     }
+
+//     // Finaliser (dessiner footer dernière page)
+//     pb.finalize();
+
+//     const filename = isVitrine
+//       ? `Fiche_Vitrine_${safeTrim(article.NART)}.pdf`
+//       : `Fiche_Complete_${safeTrim(article.NART)}.pdf`;
+//     doc.save(filename);
+//   }, [article, photoUrl, hasActivePromo, selectedEntrepriseData, stockEnJours, totalSales, totalRuptures, averageMonthlySales, salesData, mappingEntrepots]);
 
 //   // ── Rendu onglet Filiales ─────────────────────────────────────────────────
 //   const renderFilialesTab = () => {
@@ -581,9 +1319,18 @@
 //         <div className="header-actions">
 //           <button className="btn-action" onClick={refetch} disabled={isFetching} title="Rafraîchir"><HiRefresh className={isFetching ? "spinning" : ""} /></button>
 //           <button className="btn-action" onClick={handleInvalidateCache} disabled={invalidating} title="Invalider le cache"><HiCog className={invalidating ? "spinning" : ""} /></button>
-//           <button className="btn-action" onClick={() => window.print()} title="Imprimer"><HiPrinter /></button>
+//           <button className="btn-action" onClick={() => setShowPrintModal(true)} title="Imprimer la fiche article (PDF)"><HiPrinter /></button>
 //         </div>
 //       </header>
+
+//       {/* Print Modal */}
+//       <PrintModal
+//         isOpen={showPrintModal}
+//         onClose={() => setShowPrintModal(false)}
+//         onGenerate={handleGeneratePdf}
+//         articleDesign={article ? safeTrim(article.DESIGN) : ""}
+//         nart={nart}
+//       />
 
 //       {/* Content */}
 //       {!selectedEntreprise ? (
@@ -650,8 +1397,6 @@
 //           <div className="article-main-grid">
 //             {/* ── Colonne gauche ── */}
 //             <div className="article-left-column">
-
-//               {/* ── MEDIA CARD (photo + pdf) ─────────────────────────────── */}
 //               <MediaCard
 //                 photoUrl={photoUrl}
 //                 pdfUrl={pdfUrl}
@@ -661,7 +1406,6 @@
 //                 promoDiscount={calculateDiscount(article.PVTETTC, article.PVPROMO)}
 //               />
 
-//               {/* Quick Badges */}
 //               <div className="quick-badges">
 //                 {hasActivePromo && <div className="quick-badge promo"><HiFire /> PROMO -{calculateDiscount(article.PVTETTC, article.PVPROMO)}%</div>}
 //                 {safeTrim(article.WEB) === "O" && <div className="quick-badge web"><HiGlobe /> Visible Web</div>}
@@ -671,7 +1415,6 @@
 //                 {safeTrim(article.RENV) === "O" && <div className="quick-badge renvoi"><HiSwitchHorizontal /> Renvoi</div>}
 //               </div>
 
-//               {/* Quick Stats */}
 //               <div className="quick-stats">
 //                 <div className="quick-stat"><span className="stat-label">Stock Total</span><span className={`stat-value ${calculateStockTotal(article) > 0 ? "positive" : "zero"}`}>{formatStock(calculateStockTotal(article))}</span></div>
 //                 <div className="quick-stat"><span className="stat-label">En Commande</span><span className={`stat-value ${getEnCommande(article) > 0 ? "encde" : ""}`}>{formatStock(getEnCommande(article))}</span></div>
@@ -703,7 +1446,6 @@
 
 //             {/* ── Colonne droite ── */}
 //             <div className="article-right-column">
-//               {/* Tabs Navigation */}
 //               <div className="tabs-nav">
 //                 <button className={`tab-btn ${activeTab === "general" ? "active" : ""}`} onClick={() => setActiveTab("general")}><HiClipboardList /> <span>Général</span></button>
 //                 <button className={`tab-btn ${activeTab === "stocks" ? "active" : ""}`} onClick={() => setActiveTab("stocks")}><HiArchive /> <span>Stocks</span></button>
@@ -716,7 +1458,6 @@
 //                 <button className={`tab-btn ${activeTab === "autres" ? "active" : ""}`} onClick={() => setActiveTab("autres")}><HiCog /> <span>Autres</span></button>
 //               </div>
 
-//               {/* Tab Content */}
 //               <div className="tab-content">
 //                 {/* ── Général ── */}
 //                 {activeTab === "general" && (
@@ -794,7 +1535,6 @@
 //                     <div className="info-section chart-section">
 //                       <h3><HiChartBar /> Répartition des stocks</h3>
 //                       <div className="chart-container">
-//                         {/* ── GRAPHIQUE BARRES STOCKS (SVG inline, remplace Recharts) ── */}
 //                         {(() => {
 //                           const items = ["S1","S2","S3","S4","S5"].map((k) => ({ name: mappingEntrepots[k], value: parseFloat(article[k]) || 0 }));
 //                           const maxV = Math.max(...items.map(d => d.value), 1);
@@ -904,7 +1644,6 @@
 //                         <div className="chart-stat highlight"><span className="stat-value">{formatStockEnJours(stockEnJours)}</span><span className="stat-label">Stock en jours</span></div>
 //                       </div>
 //                       <div className="chart-container large">
-//                         {/* ── GRAPHIQUE AIRE VENTES (SVG inline, remplace Recharts) ── */}
 //                         {(() => {
 //                           const vals = salesData.map(d => d.ventes);
 //                           const maxV = Math.max(...vals, 1);
@@ -950,7 +1689,6 @@
 //                         <h3><HiExclamation /> Historique des ruptures (12 derniers mois)</h3>
 //                         <div className="chart-stats warning"><div className="chart-stat"><span className="stat-value">{formatStock(totalRuptures)}</span><span className="stat-label">Total ruptures</span></div></div>
 //                         <div className="chart-container">
-//                           {/* ── GRAPHIQUE BARRES RUPTURES (CSS inline, remplace Recharts) ── */}
 //                           {(() => {
 //                             const maxV = Math.max(...ruptureData.map(d => d.ruptures), 1);
 //                             return (
@@ -1032,8 +1770,10 @@
 // };
 
 // export default AdminArticleInfosScreen;
+
+// export default AdminArticleInfosScreen;
 // import default React and hooks
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
 // Icons
@@ -1075,6 +1815,9 @@ import {
   HiFire,
   HiDownload,
   HiEye,
+  HiPlus,
+  HiTrash,
+  HiX,
 } from "react-icons/hi";
 
 // APIs
@@ -1087,7 +1830,7 @@ import {
 } from "../../slices/articleApiSlice";
 import { useGetArticleFilialeDataQuery } from "../../slices/fillialeApiSlice";
 
-// New imports for PDF Generation
+// PDF Generation
 import jsPDF from "jspdf";
 import JsBarcode from "jsbarcode";
 
@@ -1096,19 +1839,30 @@ import "./AdminArticleInfosScreen.css";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper : construire l'URL du PDF à partir du trigramme et du NART
-// Convention : même dossier que les photos, extension .pdf
 // ─────────────────────────────────────────────────────────────────────────────
 const getPdfUrl = (trigramme, nart) => {
   if (!trigramme || !nart) return null;
   const cleanNart = String(nart).trim();
-  // Adapte ce chemin selon ta convention de nommage réelle
   return `/photos/${trigramme}/${cleanNart}.pdf`;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Sous-composant : MediaCard
-// Gère l'affichage de la photo et/ou du PDF de fiche technique.
-// Le statut photo + PDF est TOUJOURS affiché, même pendant la vérification.
+// Couleurs de la charte PDF
+// ─────────────────────────────────────────────────────────────────────────────
+const PDF_COLORS = {
+  BLACK: [26, 26, 26],
+  YELLOW: [255, 200, 0],
+  YELLOW_LIGHT: [255, 230, 120],
+  WHITE: [255, 255, 255],
+  GRAY_DARK: [80, 80, 80],
+  GRAY: [120, 120, 120],
+  GRAY_LIGHT: [200, 200, 200],
+  GRAY_BG: [245, 245, 245],
+  PROMO_RED: [220, 38, 38],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sous-composant : MediaCard (inchangé)
 // ─────────────────────────────────────────────────────────────────────────────
 const MediaCard = ({
   photoUrl,
@@ -1118,23 +1872,16 @@ const MediaCard = ({
   hasActivePromo,
   promoDiscount,
 }) => {
-  // "loading" | "ok" | "error"
   const [photoStatus, setPhotoStatus] = useState(hasPhotosConfigured ? "loading" : "error");
-  // "checking" | "available" | "unavailable"
   const [pdfStatus, setPdfStatus] = useState("checking");
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
 
-  // Reset photo status quand l'URL change
   useEffect(() => {
     setPhotoStatus(hasPhotosConfigured && photoUrl ? "loading" : "error");
   }, [photoUrl, hasPhotosConfigured]);
 
-  // Vérifier l'existence du PDF via HEAD request dès que l'URL est connue
   useEffect(() => {
-    if (!pdfUrl) {
-      setPdfStatus("unavailable");
-      return;
-    }
+    if (!pdfUrl) { setPdfStatus("unavailable"); return; }
     let cancelled = false;
     setPdfStatus("checking");
     fetch(pdfUrl, { method: "HEAD" })
@@ -1143,126 +1890,56 @@ const MediaCard = ({
     return () => { cancelled = true; };
   }, [pdfUrl]);
 
-  const photoOk  = hasPhotosConfigured && photoStatus === "ok";
-  const pdfOk    = pdfStatus === "available";
+  const photoOk = hasPhotosConfigured && photoStatus === "ok";
+  const pdfOk = pdfStatus === "available";
   const checking = pdfStatus === "checking";
 
   return (
     <>
       <div className="photo-card">
-
-        {/* ── Zone image ─────────────────────────────────────────────────── */}
         {hasPhotosConfigured && photoStatus !== "error" ? (
           <div className={`photo-wrapper ${photoStatus === "ok" ? "loaded" : ""}`}>
-            <img
-              src={photoUrl}
-              alt={articleDesign}
-              onError={() => setPhotoStatus("error")}
-              onLoad={() => setPhotoStatus("ok")}
-            />
-            {photoStatus === "loading" && (
-              <div className="photo-loading">
-                <div className="loading-spinner small" />
-              </div>
-            )}
-            {hasActivePromo && (
-              <div className="photo-badge promo">-{promoDiscount}%</div>
-            )}
+            <img src={photoUrl} alt={articleDesign} onError={() => setPhotoStatus("error")} onLoad={() => setPhotoStatus("ok")} />
+            {photoStatus === "loading" && (<div className="photo-loading"><div className="loading-spinner small" /></div>)}
+            {hasActivePromo && (<div className="photo-badge promo">-{promoDiscount}%</div>)}
           </div>
         ) : (
           <div className={`no-photo ${pdfOk ? "no-photo--has-pdf" : ""}`}>
-            <HiPhotograph />
-            <span>Photo indisponible</span>
+            <HiPhotograph /><span>Photo indisponible</span>
           </div>
         )}
-
-        {/* ── Bandeau statut médias — TOUJOURS VISIBLE ───────────────────── */}
         <div className="media-status-bar">
-
-          {/* — Bloc Photo — */}
           <div className={`media-status-pill ${photoOk ? "pill--ok" : "pill--ko"}`}>
             <HiPhotograph className="pill-icon" />
-            <span className="pill-label">
-              {photoStatus === "loading" ? "Photo…" : photoOk ? "Photo disponible" : "Photo indisponible"}
-            </span>
-            {photoStatus === "loading"
-              ? <div className="pill-spinner" />
-              : photoOk
-                ? <HiCheckCircle className="pill-check" />
-                : <HiXCircle className="pill-cross" />
-            }
+            <span className="pill-label">{photoStatus === "loading" ? "Photo…" : photoOk ? "Photo disponible" : "Photo indisponible"}</span>
+            {photoStatus === "loading" ? <div className="pill-spinner" /> : photoOk ? <HiCheckCircle className="pill-check" /> : <HiXCircle className="pill-cross" />}
           </div>
-
-          {/* — Bloc PDF — */}
           <div className={`media-status-pill ${checking ? "pill--checking" : pdfOk ? "pill--ok" : "pill--ko"}`}>
             <HiDocumentText className="pill-icon" />
-            <span className="pill-label">
-              {checking ? "Fiche technique…" : pdfOk ? "Fiche technique disponible" : "Fiche technique indisponible"}
-            </span>
-            {checking
-              ? <div className="pill-spinner" />
-              : pdfOk
-                ? <HiCheckCircle className="pill-check" />
-                : <HiXCircle className="pill-cross" />
-            }
+            <span className="pill-label">{checking ? "Fiche technique…" : pdfOk ? "Fiche technique disponible" : "Fiche technique indisponible"}</span>
+            {checking ? <div className="pill-spinner" /> : pdfOk ? <HiCheckCircle className="pill-check" /> : <HiXCircle className="pill-cross" />}
           </div>
         </div>
-
-        {/* ── Boutons PDF — visibles uniquement si PDF trouvé ───────────── */}
         {pdfOk && (
           <div className="pdf-actions">
-            <button
-              className="btn-pdf btn-pdf--view"
-              onClick={() => setPdfModalOpen(true)}
-              title="Voir la fiche technique"
-            >
-              <HiEye />
-              <span>Voir la fiche</span>
-            </button>
-            <a
-              className="btn-pdf btn-pdf--download"
-              href={pdfUrl}
-              download
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Télécharger la fiche technique"
-            >
-              <HiDownload />
-              <span>Télécharger</span>
-            </a>
+            <button className="btn-pdf btn-pdf--view" onClick={() => setPdfModalOpen(true)} title="Voir la fiche technique"><HiEye /><span>Voir la fiche</span></button>
+            <a className="btn-pdf btn-pdf--download" href={pdfUrl} download target="_blank" rel="noopener noreferrer" title="Télécharger la fiche technique"><HiDownload /><span>Télécharger</span></a>
           </div>
         )}
-
       </div>
-
-      {/* ── Modale PDF (iframe) ───────────────────────────────────────────── */}
       {pdfModalOpen && (
-        <div
-          className="pdf-modal-overlay"
-          onClick={(e) => { if (e.target === e.currentTarget) setPdfModalOpen(false); }}
-        >
+        <div className="pdf-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPdfModalOpen(false); }}>
           <div className="pdf-modal">
             <div className="pdf-modal-header">
               <h3><HiDocumentText /> Fiche technique — {articleDesign}</h3>
               <div className="pdf-modal-actions">
-                <a href={pdfUrl} download className="btn-pdf btn-pdf--download small" title="Télécharger">
-                  <HiDownload /><span>Télécharger</span>
-                </a>
-                <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="btn-pdf btn-pdf--view small" title="Ouvrir dans un nouvel onglet">
-                  <HiExternalLink /><span>Nouvel onglet</span>
-                </a>
-                <button className="pdf-modal-close" onClick={() => setPdfModalOpen(false)} title="Fermer">
-                  <HiXCircle />
-                </button>
+                <a href={pdfUrl} download className="btn-pdf btn-pdf--download small" title="Télécharger"><HiDownload /><span>Télécharger</span></a>
+                <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="btn-pdf btn-pdf--view small" title="Ouvrir dans un nouvel onglet"><HiExternalLink /><span>Nouvel onglet</span></a>
+                <button className="pdf-modal-close" onClick={() => setPdfModalOpen(false)} title="Fermer"><HiXCircle /></button>
               </div>
             </div>
             <div className="pdf-modal-body">
-              <iframe
-                src={`${pdfUrl}#toolbar=1&navpanes=0`}
-                title="Fiche technique"
-                width="100%"
-                height="100%"
-              />
+              <iframe src={`${pdfUrl}#toolbar=1&navpanes=0`} title="Fiche technique" width="100%" height="100%" />
             </div>
           </div>
         </div>
@@ -1272,6 +1949,317 @@ const MediaCard = ({
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Sous-composant : PrintModal
+// Modale pré-génération PDF avec sélection template, description,
+// caractéristiques dynamiques et lien web optionnel (QR code)
+// ─────────────────────────────────────────────────────────────────────────────
+const PrintModal = ({ isOpen, onClose, onGenerate, articleDesign, nart }) => {
+  const [template, setTemplate] = useState("complete"); // "complete" | "vitrine" | "etiquette"
+  const [description, setDescription] = useState("");
+  const [characteristics, setCharacteristics] = useState([]);
+  const [webUrl, setWebUrl] = useState("");
+  const [generating, setGenerating] = useState(false);
+
+  const handleAddCharacteristic = () => {
+    setCharacteristics((prev) => [...prev, { label: "", value: "", id: Date.now() }]);
+  };
+
+  const handleRemoveCharacteristic = (id) => {
+    setCharacteristics((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const handleCharChange = (id, field, val) => {
+    setCharacteristics((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, [field]: val } : c))
+    );
+  };
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    try {
+      await onGenerate({
+        template,
+        description: description.trim(),
+        characteristics: characteristics.filter((c) => c.label.trim() || c.value.trim()),
+        webUrl: webUrl.trim(),
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!generating) {
+      setDescription("");
+      setCharacteristics([]);
+      setWebUrl("");
+      setTemplate("complete");
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const templates = [
+    {
+      id: "complete",
+      label: "Fiche complète",
+      desc: "Toutes les informations : prix d'achat, marges, stocks, détails complets",
+      icon: "📋",
+    },
+    {
+      id: "vitrine",
+      label: "Fiche vitrine",
+      desc: "Version client : prix TTC, promo, photo, sans marges ni prix d'achat",
+      icon: "🏪",
+    },
+    {
+      id: "etiquette",
+      label: "Étiquette prix",
+      desc: "Format 5×3 cm : NART, désignation, code-barres, prix TTC & promo",
+      icon: "🏷️",
+    },
+  ];
+
+  return (
+    <div className="print-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}>
+      <div className="print-modal">
+        {/* Header */}
+        <div className="print-modal-header">
+          <div className="print-modal-title">
+            <HiPrinter />
+            <div>
+              <h3>Générer une fiche PDF</h3>
+              <span className="print-modal-subtitle">{nart} — {articleDesign}</span>
+            </div>
+          </div>
+          <button className="print-modal-close" onClick={handleClose} disabled={generating}>
+            <HiX />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="print-modal-body">
+
+          {/* Template selector */}
+          <div className="print-section">
+            <label className="print-section-label">Type de fiche</label>
+            <div className="template-selector">
+              {templates.map((t) => (
+                <button
+                  key={t.id}
+                  className={`template-option ${template === t.id ? "active" : ""}`}
+                  onClick={() => setTemplate(t.id)}
+                >
+                  <span className="template-icon">{t.icon}</span>
+                  <span className="template-label">{t.label}</span>
+                  <span className="template-desc">{t.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Description (pas pour étiquette) */}
+          {template !== "etiquette" && (
+            <div className="print-section">
+              <label className="print-section-label">Description (optionnel)</label>
+              <textarea
+                className="print-textarea"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Ajoutez une description libre pour cet article..."
+                rows={3}
+              />
+            </div>
+          )}
+
+          {/* Caractéristiques dynamiques (pas pour étiquette) */}
+          {template !== "etiquette" && (
+            <div className="print-section">
+              <label className="print-section-label">Caractéristiques supplémentaires (optionnel)</label>
+              <div className="chars-list">
+                {characteristics.map((c) => (
+                  <div key={c.id} className="char-row">
+                    <input
+                      type="text"
+                      className="char-input label"
+                      placeholder="Label (ex: Poids)"
+                      value={c.label}
+                      onChange={(e) => handleCharChange(c.id, "label", e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      className="char-input value"
+                      placeholder="Valeur (ex: 2.5 kg)"
+                      value={c.value}
+                      onChange={(e) => handleCharChange(c.id, "value", e.target.value)}
+                    />
+                    <button
+                      className="char-remove"
+                      onClick={() => handleRemoveCharacteristic(c.id)}
+                      title="Supprimer"
+                    >
+                      <HiTrash />
+                    </button>
+                  </div>
+                ))}
+                <button className="char-add" onClick={handleAddCharacteristic}>
+                  <HiPlus /> Ajouter une caractéristique
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* URL web optionnel (QR code) */}
+          <div className="print-section">
+            <label className="print-section-label">
+              Lien page web (optionnel)
+              <span className="print-section-hint">Un QR code sera ajouté sur la fiche</span>
+            </label>
+            <input
+              type="url"
+              className="print-input"
+              value={webUrl}
+              onChange={(e) => setWebUrl(e.target.value)}
+              placeholder="https://www.exemple.com/article/..."
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="print-modal-footer">
+          <button className="print-btn cancel" onClick={handleClose} disabled={generating}>
+            Annuler
+          </button>
+          <button className="print-btn generate" onClick={handleGenerate} disabled={generating}>
+            {generating ? (
+              <><div className="btn-spinner" /> Génération...</>
+            ) : (
+              <><HiPrinter /> Générer le PDF</>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fonctions utilitaires PDF
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Charge une image (URL) en base64 data URL. Retourne null si échec. */
+const loadImageAsBase64 = (url) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      } catch {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+};
+
+/** Génère un code-barres en base64 data URL. */
+const generateBarcodeBase64 = (value, options = {}) => {
+  try {
+    const canvas = document.createElement("canvas");
+    JsBarcode(canvas, value, {
+      format: "CODE128",
+      width: 1,
+      height: 22,
+      displayValue: true,
+      fontSize: 9,
+      margin: 2,
+      background: "#FFFFFF",
+      lineColor: "#000000",
+      ...options,
+    });
+    return canvas.toDataURL("image/png");
+  } catch {
+    return null;
+  }
+};
+
+/** Génère un QR code en base64 data URL via import dynamique. Retourne null si lib absente. */
+const generateQRCodeBase64 = async (url) => {
+  try {
+    const QRCode = await import("qrcode");
+    const toDataURL = QRCode.toDataURL || QRCode.default?.toDataURL;
+    if (!toDataURL) return null;
+    return await toDataURL(url, {
+      width: 200,
+      margin: 1,
+      color: { dark: "#1a1a1a", light: "#ffffff" },
+    });
+  } catch {
+    console.warn("QR code generation failed. Install qrcode: npm install qrcode");
+    return null;
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Classe helper pour dessiner le PDF avec gestion auto du saut de page
+// ─────────────────────────────────────────────────────────────────────────────
+class PdfBuilder {
+  constructor(doc, { margin = 15, footerHeight = 18, headerRepeatHeight = 0 } = {}) {
+    this.doc = doc;
+    this.margin = margin;
+    this.footerHeight = footerHeight;
+    this.headerRepeatHeight = headerRepeatHeight;
+    this.pageWidth = doc.internal.pageSize.getWidth();
+    this.pageHeight = doc.internal.pageSize.getHeight();
+    this.contentWidth = this.pageWidth - margin * 2;
+    this.y = margin;
+    this.pageNumber = 1;
+    this._footerFn = null;
+    this._headerRepeatFn = null;
+  }
+
+  get usableBottom() {
+    return this.pageHeight - this.footerHeight;
+  }
+
+  setFooter(fn) { this._footerFn = fn; }
+  setHeaderRepeat(fn) { this._headerRepeatFn = fn; }
+
+  /** Vérifie s'il y a assez de place, sinon ajoute une page */
+  ensureSpace(neededMm) {
+    if (this.y + neededMm > this.usableBottom) {
+      this.addPage();
+    }
+  }
+
+  addPage() {
+    // Dessiner le footer de la page courante
+    if (this._footerFn) this._footerFn(this.doc, this.pageNumber);
+    this.doc.addPage();
+    this.pageNumber++;
+    this.y = this.margin;
+    // Dessiner le header répété
+    if (this._headerRepeatFn) {
+      this._headerRepeatFn(this.doc);
+      this.y = this.margin + this.headerRepeatHeight;
+    }
+  }
+
+  /** Dessine le footer sur la dernière page */
+  finalize() {
+    if (this._footerFn) this._footerFn(this.doc, this.pageNumber);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Composant principal
 // ─────────────────────────────────────────────────────────────────────────────
 const AdminArticleInfosScreen = () => {
@@ -1279,11 +2267,10 @@ const AdminArticleInfosScreen = () => {
   const navigate = useNavigate();
 
   // États
-  const [selectedEntreprise, setSelectedEntreprise] = useState(
-    nomDossierDBF || "",
-  );
+  const [selectedEntreprise, setSelectedEntreprise] = useState(nomDossierDBF || "");
   const [selectedEntrepriseData, setSelectedEntrepriseData] = useState(null);
   const [activeTab, setActiveTab] = useState("general");
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   // State pour les taux de change
   const [exchangeRates, setExchangeRates] = useState(null);
@@ -1312,14 +2299,11 @@ const AdminArticleInfosScreen = () => {
     } catch (error) {
       setExchangeRatesError(error.message);
       setExchangeRates({
-        base: "EUR",
-        date: new Date().toISOString().split("T")[0],
+        base: "EUR", date: new Date().toISOString().split("T")[0],
         rates: { EUR: 1, USD: 1.08, XPF: XPF_EUR_RATE, AUD: 1.65, NZD: 1.78, JPY: 162, GBP: 0.85, CHF: 0.95, CNY: 7.8, CAD: 1.47 },
         isFallback: true,
       });
-    } finally {
-      setExchangeRatesLoading(false);
-    }
+    } finally { setExchangeRatesLoading(false); }
   }, []);
 
   useEffect(() => { fetchExchangeRates(); }, [fetchExchangeRates]);
@@ -1335,21 +2319,16 @@ const AdminArticleInfosScreen = () => {
     if (!rateFromEUR) return { amountXPF: null, rate: null, fromCurrency: isoCurrency, error: `Devise ${isoCurrency} non supportée` };
     return {
       amountXPF: Math.round((amount / rateFromEUR) * XPF_EUR_RATE),
-      rate: XPF_EUR_RATE / rateFromEUR,
-      fromCurrency: isoCurrency,
-      error: null,
+      rate: XPF_EUR_RATE / rateFromEUR, fromCurrency: isoCurrency, error: null,
     };
   }, [exchangeRates]);
 
   // Queries
   const { data: entreprises, isLoading: loadingEntreprises } = useGetEntreprisesQuery();
-
   const { data: articleData, isLoading: loadingArticle, error: articleError, refetch, isFetching } =
     useGetArticleByNartQuery({ nomDossierDBF: selectedEntreprise, nart }, { skip: !selectedEntreprise || !nart });
-
   const { data: adjacentData, isLoading: loadingAdjacent } =
     useGetAdjacentArticlesQuery({ nomDossierDBF: selectedEntreprise, nart }, { skip: !selectedEntreprise || !nart });
-
   const [invalidateCache, { isLoading: invalidating }] = useInvalidateArticleCacheMutation();
 
   const article = articleData?.article;
@@ -1385,7 +2364,6 @@ const AdminArticleInfosScreen = () => {
   const handleNavigatePrevious = () => {
     if (previousArticle) navigate(`/admin/articles/${selectedEntreprise}/${previousArticle.NART.trim()}`);
   };
-
   const handleNavigateNext = () => {
     if (nextArticle) navigate(`/admin/articles/${selectedEntreprise}/${nextArticle.NART.trim()}`);
   };
@@ -1398,12 +2376,18 @@ const AdminArticleInfosScreen = () => {
 
   const formatPrice = (price) => {
     if (!price && price !== 0) return "-";
-    return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "XPF", minimumFractionDigits: 0 }).format(price);
+    const num = Math.round(Number(price));
+    const formatted = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return `${formatted} XPF`;
   };
 
   const formatStock = (stock) => {
     if (stock === null || stock === undefined) return "-";
-    return parseFloat(stock).toLocaleString("fr-FR");
+    const num = parseFloat(stock);
+    if (isNaN(num)) return "-";
+    const parts = num.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return parts.join(",");
   };
 
   const formatDate = (dateValue) => {
@@ -1523,365 +2507,451 @@ const AdminArticleInfosScreen = () => {
   const hasActivePromo = article ? isPromoActive(article) : false;
   const hasPhotosConfigured = !!selectedEntrepriseData?.cheminPhotos;
 
-  // ── URLs médias ──────────────────────────────────────────────────────────
-  const photoUrl = hasPhotosConfigured && article
-    ? getPhotoUrl(selectedEntrepriseData?.trigramme, article.NART)
-    : null;
-
-  const pdfUrl = hasPhotosConfigured && article
-    ? getPdfUrl(selectedEntrepriseData?.trigramme, article.NART)
-    : null;
-
+  const photoUrl = hasPhotosConfigured && article ? getPhotoUrl(selectedEntrepriseData?.trigramme, article.NART) : null;
+  const pdfUrl = hasPhotosConfigured && article ? getPdfUrl(selectedEntrepriseData?.trigramme, article.NART) : null;
   const mappingEntrepots = selectedEntrepriseData?.mappingEntrepots || { S1: "Magasin", S2: "S2", S3: "S3", S4: "S4", S5: "S5" };
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // NEW: PDF Generation Handler
-  // Génère une fiche article "pro et jolie" avec les champs demandés
-  // ─────────────────────────────────────────────────────────────────────────────
-  // const handleGeneratePdf = useCallback(async () => {
-  //   if (!article) return;
+  // ─────────────────────────────────────────────────────────────────────────
+  // PDF GENERATION — 3 templates
+  // ─────────────────────────────────────────────────────────────────────────
+  const handleGeneratePdf = useCallback(async (options) => {
+    if (!article) return;
+    const { template, description, characteristics, webUrl } = options;
 
-  //   const doc = new jsPDF({
-  //     orientation: 'portrait',
-  //     unit: 'mm',
-  //     format: 'a4'
-  //   });
+    // ── Préparer les assets ──
+    const gencod = safeTrim(article.GENCOD);
+    const barcodeImg = gencod ? generateBarcodeBase64(gencod, {
+      width: template === "etiquette" ? 1 : 1,
+      height: template === "etiquette" ? 18 : 22,
+      fontSize: template === "etiquette" ? 8 : 9,
+    }) : null;
 
-  //   const margin = 15;
-  //   let currentY = margin;
-  //   const pageWidth = doc.internal.pageSize.getWidth();
+    const photoImg = photoUrl ? await loadImageAsBase64(photoUrl) : null;
+    const qrImg = webUrl ? await generateQRCodeBase64(webUrl) : null;
 
-  //   // Couleurs
-  //   const colorMain = [26, 26, 46]; // #1a1a2e
-  //   const colorAccent = [99, 102, 241]; // #6366f1
-  //   const colorText = [60, 60, 70];
-  //   const colorPromo = [245, 158, 11]; // #f59e0b
-  //   const colorSuccess = [16, 185, 129]; // Green
+    const entrepriseNom = selectedEntrepriseData?.nomComplet || "";
+    const dateStr = new Date().toLocaleDateString("fr-FR");
+    const promoActive = hasActivePromo;
+    const discount = calculateDiscount(article.PVTETTC, article.PVPROMO);
 
-  //   // --- HEADER ---
-  //   doc.setFillColor(...colorMain);
-  //   doc.rect(0, 0, pageWidth, 40, 'F');
+    // ================================================================
+    //  ÉTIQUETTE PRIX — Format 50mm × 30mm
+    // ================================================================
+    if (template === "etiquette") {
+      const pw = 50;
+      const ph = 30;
+      const doc = new jsPDF({ unit: "mm", format: [pw, ph] });
+      const m = 2;
 
-  //   doc.setTextColor(255, 255, 255);
-  //   doc.setFontSize(24);
-  //   doc.setFont('helvetica', 'bold');
-  //   doc.text(safeTrim(article.NART), margin, 25);
+      // Fond noir
+      doc.setFillColor(...PDF_COLORS.BLACK);
+      doc.rect(0, 0, pw, ph, "F");
 
-  //   doc.setFontSize(10);
-  //   doc.setFont('helvetica', 'normal');
-  //   doc.text("Fiche Article", margin, 15);
+      // Ligne jaune top
+      doc.setFillColor(...PDF_COLORS.YELLOW);
+      doc.rect(0, 0, pw, 1, "F");
 
-  //   // --- BARCODE (si GENCOD existe) ---
-  //   if (safeTrim(article.GENCOD)) {
-  //     try {
-  //       const canvas = document.createElement('canvas');
-  //       JsBarcode(canvas, safeTrim(article.GENCOD), {
-  //         format: "CODE128",
-  //         width: 2,
-  //         height: 50,
-  //         displayValue: true,
-  //         fontSize: 12,
-  //         margin: 0,
-  //         background: "#1a1a2e", // Match header bg
-  //         lineColor: "#ffffff"
-  //       });
-  //       const imgData = canvas.toDataURL("image/png");
-  //       doc.addImage(imgData, 'PNG', pageWidth - 75, 10, 60, 20);
-  //     } catch (e) {
-  //       console.error("Erreur génération code-barre", e);
-  //     }
-  //   }
+      // NART (jaune, petit, en haut à gauche)
+      doc.setTextColor(...PDF_COLORS.YELLOW);
+      doc.setFontSize(5);
+      doc.setFont("helvetica", "bold");
+      doc.text(safeTrim(article.NART), m, 3.5);
 
-  //   currentY = 55;
+      // TGC (ATVA) en haut à droite
+      const atva = parseFloat(article.ATVA);
+      if (atva) {
+        doc.setTextColor(...PDF_COLORS.GRAY);
+        doc.setFontSize(4);
+        doc.setFont("helvetica", "normal");
+        doc.text(`TGC ${atva.toFixed(1)}%`, pw - m, 3.5, { align: "right" });
+      }
 
-  //   // --- DESIGNATION ---
-  //   doc.setTextColor(...colorMain);
-  //   doc.setFontSize(18);
-  //   doc.setFont('helvetica', 'bold');
-  //   const splitDesign = doc.splitTextToSize(safeTrim(article.DESIGN), pageWidth - (margin * 2));
-  //   doc.text(splitDesign, margin, currentY);
-  //   currentY += (splitDesign.length * 8) + 5;
+      // DESIGN (blanc, tronqué)
+      doc.setTextColor(...PDF_COLORS.WHITE);
+      doc.setFontSize(5);
+      doc.setFont("helvetica", "bold");
+      const designText = safeTrim(article.DESIGN);
+      const designLines = doc.splitTextToSize(designText, pw - m * 2);
+      doc.text(designLines.slice(0, 2), m, 6.5);
 
-  //   // --- PHOTO & PRIX ---
-  //   const leftColX = margin;
-  //   const rightColX = 105;
-  //   const contentWidth = 85;
+      let nextY = 6.5 + Math.min(designLines.length, 2) * 2.2;
 
-  //   // Photo Box
-  //   doc.setDrawColor(220, 220, 230);
-  //   doc.setFillColor(250, 250, 252);
-  //   doc.roundedRect(leftColX, currentY, contentWidth, 80, 3, 3, 'FD');
+      // Code-barres (petit, centré)
+      if (barcodeImg) {
+        const bw = 28;
+        const bh = 7;
+        const bx = (pw - bw) / 2;
+        doc.setFillColor(...PDF_COLORS.WHITE);
+        doc.rect(bx - 0.5, nextY - 0.3, bw + 1, bh + 0.6, "F");
+        doc.addImage(barcodeImg, "PNG", bx, nextY, bw, bh);
+        nextY += bh + 1.5;
+      } else {
+        nextY += 2;
+      }
 
-  //   if (photoUrl) {
-  //     try {
-  //       // Note: jsPDF addImage peut nécessiter un logique de chargement d'image (async)
-  //       // Pour simplifier ici, on suppose que l'URL est accessible ou on utilise une image par défaut
-  //       // En production réelle, on utiliserait une Image() pour charger puis dessiner
-  //       // Ici on injecte directement, cela fonctionne si l'image est déjà dans le cache navigateur ou base64
-  //       doc.addImage(photoUrl, 'JPEG', leftColX + 2.5, currentY + 2.5, contentWidth - 5, 75, undefined, 'FAST');
-  //     } catch (e) {
-  //       doc.setTextColor(150);
-  //       doc.setFontSize(12);
-  //       doc.text("Photo indisponible", leftColX + 15, currentY + 40);
-  //     }
-  //   } else {
-  //     doc.setTextColor(150);
-  //     doc.setFontSize(12);
-  //     doc.text("Aucune photo", leftColX + 25, currentY + 40);
-  //   }
+      // PRIX
+      if (promoActive) {
+        // Ancien prix barré
+        doc.setTextColor(...PDF_COLORS.GRAY);
+        doc.setFontSize(5);
+        doc.setFont("helvetica", "normal");
+        const oldPrice = formatPrice(article.PVTETTC);
+        doc.text(oldPrice, m, nextY + 1);
+        const oldW = doc.getTextWidth(oldPrice);
+        doc.setDrawColor(...PDF_COLORS.PROMO_RED);
+        doc.setLineWidth(0.3);
+        doc.line(m, nextY + 0.5, m + oldW, nextY + 0.5);
 
-  //   // Prices Box
-  //   doc.setFillColor(249, 250, 255); // Light indigo bg
-  //   doc.roundedRect(rightColX, currentY, contentWidth, 80, 3, 3, 'F');
+        // Prix promo
+        doc.setTextColor(...PDF_COLORS.YELLOW);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.text(formatPrice(article.PVPROMO), pw - m, nextY + 1.5, { align: "right" });
 
-  //   let priceY = currentY + 10;
+        nextY += 4;
 
-  //   const addPriceLine = (label, value, isPromo = false, isBold = false) => {
-  //     doc.setFontSize(10);
-  //     doc.setTextColor(...colorText);
-  //     doc.setFont('helvetica', 'normal');
-  //     doc.text(label, rightColX + 10, priceY);
+        // Dates promo
+        doc.setTextColor(...PDF_COLORS.GRAY);
+        doc.setFontSize(3);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${formatDate(article.DPROMOD)} - ${formatDate(article.DPROMOF)}`, pw / 2, nextY, { align: "center" });
+      } else {
+        // HT à gauche, TTC gros à droite
+        doc.setTextColor(...PDF_COLORS.GRAY);
+        doc.setFontSize(4);
+        doc.setFont("helvetica", "normal");
+        doc.text(`HT: ${formatPrice(article.PVTE)}`, m, nextY + 1);
 
-  //     doc.setFontSize(14);
-  //     doc.setTextColor(...(isPromo ? colorPromo : colorMain));
-  //     doc.setFont('helvetica', isBold ? 'bold' : 'normal');
-  //     doc.text(value, rightColX + contentWidth - 10, priceY, { align: 'right' });
-  //     priceY += 15;
-  //   };
+        doc.setTextColor(...PDF_COLORS.WHITE);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.text(formatPrice(article.PVTETTC), pw - m, nextY + 1.5, { align: "right" });
+      }
 
-  //   // Contenu Prix
-  //   addPriceLine("Prix de Vente HT", formatPrice(article.PVTE));
-  //   addPriceLine(`Taux TGC`, formatPercent(article.TAXES));
-  //   addPriceLine("Prix TTC", formatPrice(article.PVTETTC), false, true);
+      // Ligne jaune bottom
+      doc.setFillColor(...PDF_COLORS.YELLOW);
+      doc.rect(0, ph - 0.8, pw, 0.8, "F");
 
-  //   // PROMO (si active)
-  //   if (hasActivePromo) {
-  //     currentY += 90; // Espace sous la box prix
-
-  //     // Promo Banner
-  //     doc.setFillColor(...colorPromo);
-  //     doc.roundedRect(rightColX, priceY + 5, contentWidth, 25, 3, 3, 'F');
-
-  //     doc.setTextColor(255, 255, 255);
-  //     doc.setFontSize(12);
-  //     doc.setFont('helvetica', 'bold');
-  //     doc.text("PROMO", rightColX + 10, priceY + 15);
-
-  //     doc.setFontSize(14);
-  //     doc.text(formatPrice(article.PVPROMO), rightColX + contentWidth - 10, priceY + 15, { align: 'right' });
-
-  //     // Dates Promo
-  //     currentY += 30;
-  //     doc.setTextColor(...colorText);
-  //     doc.setFontSize(9);
-  //     doc.setFont('helvetica', 'italic');
-  //     const dateText = `Du ${formatDate(article.DPROMOD)} au ${formatDate(article.DPROMOF)}`;
-  //     doc.text(dateText, rightColX + 10, priceY + 35);
-  //   }
-
-  //   // --- FOOTER ---
-  //   const pageHeight = doc.internal.pageSize.getHeight();
-  //   doc.setFontSize(8);
-  //   doc.setTextColor(150);
-  //   doc.text(`Imprimé le ${new Date().toLocaleDateString('fr-FR')} - ${selectedEntrepriseData?.nomComplet || ''}`, margin, pageHeight - 10);
-
-  //   // Save
-  //   doc.save(`Fiche_${safeTrim(article.NART)}.pdf`);
-
-  // }, [article, photoUrl, hasActivePromo, selectedEntrepriseData]); // Dependencies
-const [showPrintModal, setShowPrintModal] = useState(false);
-const [pdfDescription, setPdfDescription] = useState("");
-
-  const handleGeneratePdf = useCallback(async () => {
-  if (!article) return;
-
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
-
-  const margin = 15;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const contentWidth = pageWidth - margin * 2;
-  let y = margin;
-
-  const BLACK = [20, 20, 20];
-  const YELLOW = [255, 200, 0];
-  const GRAY = [120, 120, 120];
-
-  // ───────────────────────── HEADER ─────────────────────────
-  doc.setFillColor(...BLACK);
-  doc.rect(0, 0, pageWidth, 35, "F");
-
-  doc.setTextColor(...YELLOW);
-  doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
-  doc.text(safeTrim(article.NART), margin, 18);
-
-  // DESIGNATION (MULTILINE SAFE)
-  doc.setTextColor(230);
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-
-  const designLines = doc.splitTextToSize(
-    safeTrim(article.DESIGN),
-    pageWidth - 100
-  );
-  doc.text(designLines, margin, 26);
-
-  // ───────────── CODE BARRE FIX (NON ÉTIRÉ) ─────────────
-  if (safeTrim(article.GENCOD)) {
-    const canvas = document.createElement("canvas");
-
-    JsBarcode(canvas, safeTrim(article.GENCOD), {
-      format: "CODE128",
-      width: 1.2,        // ⚠️ plus fin → pas étiré
-      height: 25,
-      displayValue: true,
-      fontSize: 10,
-      margin: 0,
-      background: "#FFFFFF",
-      lineColor: "#000000"
-    });
-
-    const img = canvas.toDataURL("image/png");
-
-    // Taille fixe ratio propre
-    doc.addImage(img, "PNG", pageWidth - 70, 8, 55, 18);
-  }
-
-  y = 45;
-
-  // ───────────────────────── IMAGE + INFOS ─────────────────────────
-  const colLeft = margin;
-  const colRight = margin + 90;
-
-  // PHOTO
-  doc.setDrawColor(200);
-  doc.roundedRect(colLeft, y, 80, 70, 2, 2);
-
-  if (photoUrl) {
-    try {
-      doc.addImage(photoUrl, "JPEG", colLeft + 2, y + 2, 76, 66);
-    } catch {
-      doc.text("Image non dispo", colLeft + 15, y + 35);
+      doc.save(`Etiquette_${safeTrim(article.NART)}.pdf`);
+      return;
     }
-  }
 
-  // INFOS PRINCIPALES
-  const addLine = (label, value) => {
-    doc.setFontSize(8);
-    doc.setTextColor(...GRAY);
-    doc.text(label, colRight, y);
+    // ================================================================
+    //  FICHE COMPLÈTE & FICHE VITRINE — Format A4
+    // ================================================================
+    const isVitrine = template === "vitrine";
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const margin = 15;
+    const pb = new PdfBuilder(doc, { margin, footerHeight: 18, headerRepeatHeight: 12 });
 
-    doc.setFontSize(12);
-    doc.setTextColor(...BLACK);
-    doc.text(value, colRight + 70, y, { align: "right" });
-
-    y += 8;
-  };
-
-  y += 5;
-
-  addLine("Stock", formatStock(calculateStockTotal(article)));
-  addLine("Prix HT", formatPrice(article.PVTE));
-  addLine("Prix TTC", formatPrice(article.PVTETTC));
-  addLine("TGC", formatPercent(article.ATVA));
-
-  y += 10;
-
-  // ───────────────────────── SECTION LISTES (NEW 🔥) ─────────────────────────
-
-  const drawSection = (title, items) => {
-    doc.setFillColor(245);
-    doc.roundedRect(margin, y, contentWidth, 8, 1, 1, "F");
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...BLACK);
-    doc.text(title, margin + 3, y + 5);
-
-    y += 12;
-
-    items.forEach((item) => {
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
-
-      doc.text(`• ${item.label}`, margin + 3, y);
-      doc.text(item.value, pageWidth - margin, y, { align: "right" });
-
-      y += 6;
+    // ── Footer sur chaque page ──
+    pb.setFooter((d, pageNum) => {
+      d.setDrawColor(...PDF_COLORS.GRAY_LIGHT);
+      d.setLineWidth(0.3);
+      d.line(margin, pb.pageHeight - 14, pb.pageWidth - margin, pb.pageHeight - 14);
+      d.setFontSize(7);
+      d.setTextColor(...PDF_COLORS.GRAY);
+      d.text(`${entrepriseNom} • ${dateStr}`, margin, pb.pageHeight - 9);
+      d.text(`Page ${pageNum}`, pb.pageWidth - margin, pb.pageHeight - 9, { align: "right" });
     });
 
-    y += 5;
-  };
+    // ── Header répété (petit bandeau noir) ──
+    pb.setHeaderRepeat((d) => {
+      d.setFillColor(...PDF_COLORS.BLACK);
+      d.rect(0, 0, pb.pageWidth, 10, "F");
+      d.setTextColor(...PDF_COLORS.YELLOW);
+      d.setFontSize(8);
+      d.setFont("helvetica", "bold");
+      d.text(`${safeTrim(article.NART)} — ${safeTrim(article.DESIGN).substring(0, 60)}`, margin, 7);
+    });
 
-  // 👉 EXEMPLE LISTE INFOS PRODUIT
-  drawSection("Informations produit", [
-    { label: "Poids", value: article.POIDS || "-" },
-    { label: "Largeur", value: article.LARGEUR || "-" },
-    { label: "Longueur", value: article.LONGUEUR || "-" },
-    { label: "Couleur", value: article.COULEUR || "-" },
-  ]);
+    // ════════════════════════════════════════════════════════════════
+    //  PAGE 1 — HEADER PRINCIPAL
+    // ════════════════════════════════════════════════════════════════
+    doc.setFillColor(...PDF_COLORS.BLACK);
+    doc.rect(0, 0, pb.pageWidth, 38, "F");
 
-  // 👉 AJOUT DESCRIPTION PROPRE
-  if (pdfDescription) {
-    doc.setFontSize(10);
+    // Bandeau jaune fin en haut
+    doc.setFillColor(...PDF_COLORS.YELLOW);
+    doc.rect(0, 0, pb.pageWidth, 2, "F");
+
+    // Label "Fiche Article"
+    doc.setTextColor(...PDF_COLORS.YELLOW);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(isVitrine ? "FICHE PRODUIT" : "FICHE ARTICLE", margin, 12);
+
+    // NART
+    doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
-    doc.text("Description", margin, y);
+    doc.text(safeTrim(article.NART), margin, 23);
 
-    y += 6;
-
+    // Désignation sous le NART
+    doc.setTextColor(...PDF_COLORS.WHITE);
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
+    const headerDesign = doc.splitTextToSize(safeTrim(article.DESIGN), pb.pageWidth - margin - 70);
+    doc.text(headerDesign, margin, 30);
 
-    const desc = doc.splitTextToSize(pdfDescription, contentWidth);
-    doc.text(desc, margin, y);
+    // Code-barres en haut à droite
+    if (barcodeImg) {
+      doc.setFillColor(...PDF_COLORS.WHITE);
+      doc.roundedRect(pb.pageWidth - 60, 6, 48, 20, 2, 2, "F");
+      doc.addImage(barcodeImg, "PNG", pb.pageWidth - 58, 7, 44, 18);
+    }
 
-    y += desc.length * 5 + 5;
-  }
+    // GENCOD text sous le code-barres
+    if (gencod) {
+      doc.setTextColor(...PDF_COLORS.GRAY);
+      doc.setFontSize(7);
+      doc.text(gencod, pb.pageWidth - 36, 32, { align: "center" });
+    }
 
-  // ───────────────────────── PROMO ─────────────────────────
-  if (hasActivePromo) {
-    doc.setFillColor(...YELLOW);
-    doc.roundedRect(margin, y, contentWidth, 20, 2, 2, "F");
+    pb.y = 46;
 
-    doc.setTextColor(...BLACK);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
+    // ════════════════════════════════════════════════════════════════
+    //  PHOTO + BLOC PRIX
+    // ════════════════════════════════════════════════════════════════
+    const photoBoxW = 75;
+    const photoBoxH = 65;
+    const priceBoxX = margin + photoBoxW + 8;
+    const priceBoxW = pb.contentWidth - photoBoxW - 8;
 
-    doc.text("PROMOTION", margin + 5, y + 8);
+    // Photo
+    doc.setDrawColor(...PDF_COLORS.GRAY_LIGHT);
+    doc.setFillColor(250, 250, 250);
+    doc.roundedRect(margin, pb.y, photoBoxW, photoBoxH, 2, 2, "FD");
 
-    doc.setFontSize(14);
-    doc.text(
-      formatPrice(article.PVPROMO),
-      pageWidth - margin,
-      y + 12,
-      { align: "right" }
-    );
+    if (photoImg) {
+      try {
+        doc.addImage(photoImg, "JPEG", margin + 2, pb.y + 2, photoBoxW - 4, photoBoxH - 4);
+      } catch {
+        doc.setTextColor(...PDF_COLORS.GRAY);
+        doc.setFontSize(10);
+        doc.text("Photo indisponible", margin + 12, pb.y + 35);
+      }
+    } else {
+      doc.setTextColor(...PDF_COLORS.GRAY);
+      doc.setFontSize(10);
+      doc.text("Photo indisponible", margin + 12, pb.y + 35);
+    }
 
-    y += 25;
-  }
+    // Bloc prix
+    doc.setFillColor(...PDF_COLORS.GRAY_BG);
+    doc.roundedRect(priceBoxX, pb.y, priceBoxW, photoBoxH, 2, 2, "F");
 
-  // ───────────────────────── FOOTER ─────────────────────────
-  const pageHeight = doc.internal.pageSize.getHeight();
+    let priceY = pb.y + 10;
 
-  doc.setDrawColor(200);
-  doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+    const drawPriceLine = (label, value, opts = {}) => {
+      const { bold = false, accent = false, strikethrough = false } = opts;
+      doc.setFontSize(9);
+      doc.setTextColor(...PDF_COLORS.GRAY_DARK);
+      doc.setFont("helvetica", "normal");
+      doc.text(label, priceBoxX + 8, priceY);
 
-  doc.setFontSize(8);
-  doc.setTextColor(100);
+      doc.setFontSize(bold ? 15 : 12);
+      doc.setTextColor(...(accent ? PDF_COLORS.YELLOW : PDF_COLORS.BLACK));
+      doc.setFont("helvetica", bold ? "bold" : "normal");
+      doc.text(value, priceBoxX + priceBoxW - 8, priceY, { align: "right" });
 
-  doc.text(
-    `${selectedEntrepriseData?.nomComplet || ""} • ${new Date().toLocaleDateString()}`,
-    margin,
-    pageHeight - 8
-  );
+      if (strikethrough) {
+        const tw = doc.getTextWidth(value);
+        doc.setDrawColor(...PDF_COLORS.PROMO_RED);
+        doc.setLineWidth(0.5);
+        doc.line(priceBoxX + priceBoxW - 8 - tw, priceY - 1.5, priceBoxX + priceBoxW - 8, priceY - 1.5);
+      }
 
-  // SAVE
-  doc.save(`Fiche_${safeTrim(article.NART)}.pdf`);
+      priceY += 12;
+    };
 
-  setPdfDescription("");
-  setShowPrintModal(false);
+    if (!isVitrine) {
+      drawPriceLine("Prix HT (PVTE)", formatPrice(article.PVTE));
+      drawPriceLine("TGC (ATVA)", formatPercent(article.ATVA));
+    }
+    drawPriceLine("Prix TTC", formatPrice(article.PVTETTC), {
+      bold: true,
+      strikethrough: promoActive,
+    });
 
-}, [article, pdfDescription, selectedEntrepriseData]);
+    if (promoActive) {
+      drawPriceLine(`PROMO -${discount}%`, formatPrice(article.PVPROMO), { bold: true, accent: true });
+    }
+
+    // QR code dans le bloc prix (coin bas droit)
+    if (qrImg) {
+      const qrSize = 22;
+      const qrX = priceBoxX + priceBoxW - qrSize - 5;
+      const qrY2 = pb.y + photoBoxH - qrSize - 3;
+      doc.addImage(qrImg, "PNG", qrX, qrY2, qrSize, qrSize);
+      doc.setFontSize(5);
+      doc.setTextColor(...PDF_COLORS.GRAY);
+      doc.text("Voir en ligne", qrX + qrSize / 2, qrY2 + qrSize + 3, { align: "center" });
+    }
+
+    pb.y += photoBoxH + 8;
+
+    // ════════════════════════════════════════════════════════════════
+    //  BANDEAU PROMO (si actif)
+    // ════════════════════════════════════════════════════════════════
+    if (promoActive) {
+      pb.ensureSpace(22);
+      doc.setFillColor(...PDF_COLORS.YELLOW);
+      doc.roundedRect(margin, pb.y, pb.contentWidth, 16, 2, 2, "F");
+
+      doc.setTextColor(...PDF_COLORS.BLACK);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(`PROMOTION  -${discount}%`, margin + 8, pb.y + 7);
+
+      doc.setFontSize(14);
+      doc.text(formatPrice(article.PVPROMO), pb.pageWidth - margin - 8, pb.y + 8, { align: "right" });
+
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(...PDF_COLORS.GRAY_DARK);
+      doc.text(`Du ${formatDate(article.DPROMOD)} au ${formatDate(article.DPROMOF)}`, margin + 8, pb.y + 13);
+
+      pb.y += 22;
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  HELPER — Section titre
+    // ════════════════════════════════════════════════════════════════
+    const drawSectionTitle = (title) => {
+      pb.ensureSpace(14);
+      doc.setFillColor(...PDF_COLORS.BLACK);
+      doc.roundedRect(margin, pb.y, pb.contentWidth, 8, 1, 1, "F");
+      doc.setTextColor(...PDF_COLORS.YELLOW);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text(title, margin + 4, pb.y + 5.5);
+      pb.y += 12;
+    };
+
+    // ════════════════════════════════════════════════════════════════
+    //  HELPER — Ligne info (label / valeur)
+    // ════════════════════════════════════════════════════════════════
+    const drawInfoLine = (label, value, opts = {}) => {
+      const { indent = 0 } = opts;
+      pb.ensureSpace(6);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...PDF_COLORS.GRAY_DARK);
+      doc.text(label, margin + 4 + indent, pb.y);
+      doc.setTextColor(...PDF_COLORS.BLACK);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(value || "-"), pb.pageWidth - margin - 4, pb.y, { align: "right" });
+      pb.y += 6;
+    };
+
+    // ════════════════════════════════════════════════════════════════
+    //  INFOS PRODUIT
+    // ════════════════════════════════════════════════════════════════
+    drawSectionTitle("INFORMATIONS PRODUIT");
+    drawInfoLine("Fournisseur", article.FOURN || "-");
+    drawInfoLine("Réf. fournisseur", safeTrim(article.REFER) || "-");
+    drawInfoLine("Groupe / Famille", safeTrim(article.GROUPE) || "-");
+    drawInfoLine("Unité", safeTrim(article.UNITE) || "-");
+    if (safeTrim(article.GENCOD)) drawInfoLine("Code barre (GENCOD)", safeTrim(article.GENCOD));
+    pb.y += 2;
+
+    // ════════════════════════════════════════════════════════════════
+    //  PRIX
+    // ════════════════════════════════════════════════════════════════
+    drawSectionTitle("PRIX");
+    drawInfoLine("Prix HT (PVTE)", formatPrice(article.PVTE));
+    drawInfoLine("TGC (ATVA)", formatPercent(article.ATVA));
+    drawInfoLine("Prix TTC", formatPrice(article.PVTETTC));
+    if (promoActive) {
+      drawInfoLine("Prix PROMO", formatPrice(article.PVPROMO));
+      drawInfoLine("Du", formatDate(article.DPROMOD));
+      drawInfoLine("Au", formatDate(article.DPROMOF));
+    }
+    if (!isVitrine) {
+      const marge = calculateMarge(article);
+      if (marge) drawInfoLine("Marge calculée", `${marge}%`);
+    }
+    pb.y += 2;
+
+    // ════════════════════════════════════════════════════════════════
+    //  STOCKS (fiche complète uniquement)
+    // ════════════════════════════════════════════════════════════════
+    if (!isVitrine) {
+      drawSectionTitle("STOCKS");
+      drawInfoLine("Stock total", formatStock(calculateStockTotal(article)));
+      drawInfoLine("En commande", formatStock(getEnCommande(article)));
+      drawInfoLine("Stock en jours", formatStockEnJours(stockEnJours));
+
+      const stockKeys = ["S1", "S2", "S3", "S4", "S5"];
+      stockKeys.forEach((k) => {
+        const val = parseFloat(article[k]) || 0;
+        if (val > 0) drawInfoLine(`  ${mappingEntrepots[k]}`, formatStock(val), { indent: 6 });
+      });
+      pb.y += 2;
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  CARACTÉRISTIQUES PERSONNALISÉES
+    // ════════════════════════════════════════════════════════════════
+    if (characteristics && characteristics.length > 0) {
+      drawSectionTitle("CARACTÉRISTIQUES");
+      characteristics.forEach((c) => {
+        drawInfoLine(c.label, c.value);
+      });
+      pb.y += 2;
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  DESCRIPTION
+    // ════════════════════════════════════════════════════════════════
+    if (description) {
+      drawSectionTitle("DESCRIPTION");
+      pb.ensureSpace(12);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...PDF_COLORS.GRAY_DARK);
+      const descLines = doc.splitTextToSize(description, pb.contentWidth - 8);
+      // Écrire ligne par ligne avec gestion du saut
+      descLines.forEach((line) => {
+        pb.ensureSpace(5);
+        doc.text(line, margin + 4, pb.y);
+        pb.y += 4.5;
+      });
+      pb.y += 4;
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  QR CODE GRAND (si webUrl et pas déjà dans le bloc prix)
+    // ════════════════════════════════════════════════════════════════
+    if (qrImg && webUrl) {
+      pb.ensureSpace(35);
+      doc.setFillColor(...PDF_COLORS.GRAY_BG);
+      doc.roundedRect(margin, pb.y, pb.contentWidth, 30, 2, 2, "F");
+
+      doc.addImage(qrImg, "PNG", margin + 4, pb.y + 3, 24, 24);
+
+      doc.setTextColor(...PDF_COLORS.BLACK);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text("Voir cet article en ligne", margin + 34, pb.y + 12);
+
+      doc.setTextColor(...PDF_COLORS.GRAY);
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "normal");
+      const urlTruncated = webUrl.length > 80 ? webUrl.substring(0, 77) + "..." : webUrl;
+      doc.text(urlTruncated, margin + 34, pb.y + 19);
+
+      pb.y += 34;
+    }
+
+    // Finaliser (dessiner footer dernière page)
+    pb.finalize();
+
+    const filename = isVitrine
+      ? `Fiche_Vitrine_${safeTrim(article.NART)}.pdf`
+      : `Fiche_Complete_${safeTrim(article.NART)}.pdf`;
+    doc.save(filename);
+  }, [article, photoUrl, hasActivePromo, selectedEntrepriseData, stockEnJours, totalSales, totalRuptures, averageMonthlySales, salesData, mappingEntrepots]);
 
   // ── Rendu onglet Filiales ─────────────────────────────────────────────────
   const renderFilialesTab = () => {
@@ -1972,10 +3042,18 @@ const [pdfDescription, setPdfDescription] = useState("");
         <div className="header-actions">
           <button className="btn-action" onClick={refetch} disabled={isFetching} title="Rafraîchir"><HiRefresh className={isFetching ? "spinning" : ""} /></button>
           <button className="btn-action" onClick={handleInvalidateCache} disabled={invalidating} title="Invalider le cache"><HiCog className={invalidating ? "spinning" : ""} /></button>
-          {/* UPDATED: Now calls handleGeneratePdf */}
-          <button className="btn-action" onClick={handleGeneratePdf} title="Imprimer la fiche article (PDF)"><HiPrinter /></button>
+          <button className="btn-action" onClick={() => setShowPrintModal(true)} title="Imprimer la fiche article (PDF)"><HiPrinter /></button>
         </div>
       </header>
+
+      {/* Print Modal */}
+      <PrintModal
+        isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        onGenerate={handleGeneratePdf}
+        articleDesign={article ? safeTrim(article.DESIGN) : ""}
+        nart={nart}
+      />
 
       {/* Content */}
       {!selectedEntreprise ? (
@@ -2042,8 +3120,6 @@ const [pdfDescription, setPdfDescription] = useState("");
           <div className="article-main-grid">
             {/* ── Colonne gauche ── */}
             <div className="article-left-column">
-
-              {/* ── MEDIA CARD (photo + pdf) ─────────────────────────────── */}
               <MediaCard
                 photoUrl={photoUrl}
                 pdfUrl={pdfUrl}
@@ -2053,7 +3129,6 @@ const [pdfDescription, setPdfDescription] = useState("");
                 promoDiscount={calculateDiscount(article.PVTETTC, article.PVPROMO)}
               />
 
-              {/* Quick Badges */}
               <div className="quick-badges">
                 {hasActivePromo && <div className="quick-badge promo"><HiFire /> PROMO -{calculateDiscount(article.PVTETTC, article.PVPROMO)}%</div>}
                 {safeTrim(article.WEB) === "O" && <div className="quick-badge web"><HiGlobe /> Visible Web</div>}
@@ -2063,7 +3138,6 @@ const [pdfDescription, setPdfDescription] = useState("");
                 {safeTrim(article.RENV) === "O" && <div className="quick-badge renvoi"><HiSwitchHorizontal /> Renvoi</div>}
               </div>
 
-              {/* Quick Stats */}
               <div className="quick-stats">
                 <div className="quick-stat"><span className="stat-label">Stock Total</span><span className={`stat-value ${calculateStockTotal(article) > 0 ? "positive" : "zero"}`}>{formatStock(calculateStockTotal(article))}</span></div>
                 <div className="quick-stat"><span className="stat-label">En Commande</span><span className={`stat-value ${getEnCommande(article) > 0 ? "encde" : ""}`}>{formatStock(getEnCommande(article))}</span></div>
@@ -2095,7 +3169,6 @@ const [pdfDescription, setPdfDescription] = useState("");
 
             {/* ── Colonne droite ── */}
             <div className="article-right-column">
-              {/* Tabs Navigation */}
               <div className="tabs-nav">
                 <button className={`tab-btn ${activeTab === "general" ? "active" : ""}`} onClick={() => setActiveTab("general")}><HiClipboardList /> <span>Général</span></button>
                 <button className={`tab-btn ${activeTab === "stocks" ? "active" : ""}`} onClick={() => setActiveTab("stocks")}><HiArchive /> <span>Stocks</span></button>
@@ -2108,7 +3181,6 @@ const [pdfDescription, setPdfDescription] = useState("");
                 <button className={`tab-btn ${activeTab === "autres" ? "active" : ""}`} onClick={() => setActiveTab("autres")}><HiCog /> <span>Autres</span></button>
               </div>
 
-              {/* Tab Content */}
               <div className="tab-content">
                 {/* ── Général ── */}
                 {activeTab === "general" && (
@@ -2186,7 +3258,6 @@ const [pdfDescription, setPdfDescription] = useState("");
                     <div className="info-section chart-section">
                       <h3><HiChartBar /> Répartition des stocks</h3>
                       <div className="chart-container">
-                        {/* ── GRAPHIQUE BARRES STOCKS (SVG inline, remplace Recharts) ── */}
                         {(() => {
                           const items = ["S1","S2","S3","S4","S5"].map((k) => ({ name: mappingEntrepots[k], value: parseFloat(article[k]) || 0 }));
                           const maxV = Math.max(...items.map(d => d.value), 1);
@@ -2296,7 +3367,6 @@ const [pdfDescription, setPdfDescription] = useState("");
                         <div className="chart-stat highlight"><span className="stat-value">{formatStockEnJours(stockEnJours)}</span><span className="stat-label">Stock en jours</span></div>
                       </div>
                       <div className="chart-container large">
-                        {/* ── GRAPHIQUE AIRE VENTES (SVG inline, remplace Recharts) ── */}
                         {(() => {
                           const vals = salesData.map(d => d.ventes);
                           const maxV = Math.max(...vals, 1);
@@ -2342,7 +3412,6 @@ const [pdfDescription, setPdfDescription] = useState("");
                         <h3><HiExclamation /> Historique des ruptures (12 derniers mois)</h3>
                         <div className="chart-stats warning"><div className="chart-stat"><span className="stat-value">{formatStock(totalRuptures)}</span><span className="stat-label">Total ruptures</span></div></div>
                         <div className="chart-container">
-                          {/* ── GRAPHIQUE BARRES RUPTURES (CSS inline, remplace Recharts) ── */}
                           {(() => {
                             const maxV = Math.max(...ruptureData.map(d => d.ruptures), 1);
                             return (
