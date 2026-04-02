@@ -19,6 +19,7 @@ import outilRoutes from "./routes//outilRoutes.js";
 import concurrentRoutes from "./routes/concurrentRoutes.js";
 import articleRoutes from "./routes/articleRoutes.js";
 import clientRoutes from "./routes/clientRoutes.js";
+import releveRoutes from "./routes/releveRoutes.js";
 import commandeRoutes from "./routes/commandeRoutes.js";
 import fournissRoutes from "./routes/fournissRoutes.js";
 import photoRoutes from "./routes/photoRoutes.js";
@@ -80,6 +81,7 @@ app.use("/api/articles", articleRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/fournisseurs", fournissRoutes);
 app.use("/api/photos", photoRoutes);
+app.use("/api/releves", releveRoutes);
 // ========== ROUTES OUTILS ==========
 app.use("/api/outils", outilRoutes);
 
