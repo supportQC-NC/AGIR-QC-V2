@@ -134,7 +134,7 @@ export const moduleMenuStructure = [
       },
       {
         label: "Relevés",
-        path: "/admin/releves",
+        path: "/releves",
         icon: HiDocumentReport,
       },
     ],

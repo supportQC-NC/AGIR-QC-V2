@@ -28,7 +28,7 @@ import UserDashboard from "./screens/User/UserDashboardScreen";
 import ProfileScreen from "./screens/User/ProfileScreen";
 import ArticleSearch from "./screens/User/UserArticleSearch";
 import UserReappro from "./screens/User/UserReappro";
-import ReleveScreen from "./screens/User/RelevesScreen";
+import RelevesScreen from "./screens/User/RelevesScreen";
 
 // Admin
 import AdminTachesCronScreen from "./screens/admin/AdminTachesCronScreen";
@@ -78,7 +78,7 @@ const router = createBrowserRouter(
       <Route element={<PrivateRoute />}>
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/articles" element={<ArticleSearch />} />
-        <Route path="/releve" element={<ReleveScreen />} />
+        <Route path="/releves" element={<RelevesScreen />} />
         <Route path="/reappro" element={<UserReappro />} />
         <Route path="/profile" element={<ProfileScreen />} />
       </Route>
