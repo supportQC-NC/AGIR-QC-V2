@@ -48,6 +48,7 @@ import AdminCommandeDetailsScreen from "./screens/admin/AdminCommandeDetailsScre
 import AdminFacturesScreen from "./screens/admin/AdminFacturesScreen";
 import AdminFactureDetailScreen from "./screens/admin/AdminFactureDetailsScreen";
 import AdminDemandesReapproScreen from "./screens/admin/AdminDemandesReapproScreen";
+import AdminProformasScreen from "./screens/admin/AdminProformasScreen";
 
 // 🔹 DashboardRedirect - redirige selon rôle
 const DashboardRedirect = () => {
@@ -91,6 +92,27 @@ const router = createBrowserRouter(
         <Route path="/admin/outils" element={<AdminOutilsScreen />} />
         <Route path="/admin/taches-cron" element={<AdminTachesCronScreen />} />
         <Route path="/admin/concurrents" element={<AdminConcurrents />} />
+        <Route path="/admin/concurrents" element={<AdminConcurrents />} />
+        // commandes
+        <Route path="/admin/commandes" element={<AdminCommandesScreen />} />
+        <Route
+          path="/admin/commandes/:nomDossierDBF"
+          element={<AdminCommandesScreen />}
+        />
+        <Route
+          path="/admin/commandes/:nomDossierDBF/:numcde"
+          element={<AdminCommandeDetailsScreen />}
+        />
+        // factures
+        <Route path="/admin/factures" element={<AdminFacturesScreen />} />
+        <Route
+          path="/admin/factures/:nomDossierDBF"
+          element={<AdminFacturesScreen />}
+        />
+        <Route
+          path="/admin/factures/:nomDossierDBF/:numfact"
+          element={<AdminFactureDetailScreen />}
+        />
         <Route
           path="/admin/fournisseurs"
           element={<AdminFournisseursScreen />}
@@ -118,18 +140,20 @@ const router = createBrowserRouter(
         <Route path="/admin/articles" element={<AdminArticles />} />
         <Route path="/admin/clients" element={<AdminClientsScreen />} />
         <Route
+          path="/admin/clients/:nomDossierDBF/:tiers"
+          element={<AdminClientDetailScreen />}
+        />
+        <Route
           path="/admin/clients/:nomDossierDBF"
           element={<AdminClientsScreen />}
         />
         <Route
-          path="/admin/clients/:nomDossierDBF/:tiers"
-          element={<AdminClientDetailScreen />}
-        />
-        <Route path="/admin/concurrents" element={<AdminConcurrents />} />
-        <Route
           path="/admin/articles/:nomDossierDBF/:nart"
           element={<AdminArticleInfosScreen />}
         />
+        //concurrents
+        <Route path="/admin/concurrents" element={<AdminConcurrents />} />
+        // Commandes
         <Route path="/admin/commandes" element={<AdminCommandesScreen />} />
         <Route
           path="/admin/commandes/:nomDossierDBF"
@@ -139,6 +163,7 @@ const router = createBrowserRouter(
           path="/admin/commandes/:nomDossierDBF/:numcde"
           element={<AdminCommandeDetailsScreen />}
         />
+        // Factures
         <Route path="/admin/factures" element={<AdminFacturesScreen />} />
         <Route
           path="/admin/factures/:nomDossierDBF"
@@ -148,6 +173,9 @@ const router = createBrowserRouter(
           path="/admin/factures/:nomDossierDBF/:numfact"
           element={<AdminFactureDetailScreen />}
         />
+        // proformats
+        <Route path="/admin/proformas" element={<AdminProformasScreen />} />
+        // fournisseurs
         <Route
           path="/admin/fournisseurs"
           element={<AdminFournisseursScreen />}

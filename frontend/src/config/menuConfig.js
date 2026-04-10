@@ -76,6 +76,16 @@ export const adminMenuStructure = [
         icon: HiCube,
       },
       {
+        label: "Factures",
+        path: "/admin/factures",
+        icon: HiCube,
+      },
+      {
+        label: "Proformas",
+        path: "/admin/proformas",
+        icon: HiCube,
+      },
+      {
         label: "Fournisseurs",
         path: "/admin/fournisseurs",
         icon: HiCube,
@@ -88,6 +98,11 @@ export const adminMenuStructure = [
       {
         label: "Concurrents",
         path: "/admin/concurrents",
+        icon: HiCube,
+      },
+      {
+        label: "Commandes",
+        path: "/admin/commandes",
         icon: HiCube,
       },
     ],
